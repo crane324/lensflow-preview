@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI分身工坊 - Social</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --pink:#FF6B9D; --pink-deep:#D6336C; --pink-light:#FFF5F7;
+    --bg:#f8f8fa; --card:#fff; --text:#2D1B2E;
+    --text-secondary:rgba(50,30,40,0.65); --border:#f0e8ea; --nav-bg:#ECDDC8;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); font-family:'Inter','PingFang SC','Noto Sans SC',-apple-system,sans-serif; color:var(--text); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+
+.navbar { position:fixed; top:0; left:0; right:0; z-index:100; background:var(--nav-bg); display:flex; align-items:center; justify-content:space-between; padding:0 40px; height:56px; border-bottom:1px solid rgba(0,0,0,0.04); }
+.nav-logo { font-size:20px; font-weight:700; background:linear-gradient(135deg,#D6336C,#FF6B9D); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-decoration:none; }
+.nav-links { display:flex; gap:36px; }
+.nav-link { color:#fff; text-decoration:none; font-size:15px; font-weight:300; font-family:'Noto Serif SC','STSong',serif; text-shadow:0 1px 2px rgba(0,0,0,0.08); }
+.nav-link:hover { opacity:0.8; }
+
+.global-refresh { position:fixed; top:76px; right:32px; z-index:90; width:48px; height:48px; border-radius:50%; background:#FF6B9D; color:#fff; border:none; cursor:pointer; box-shadow:0 4px 16px rgba(255,107,157,0.3); display:flex; align-items:center; justify-content:center; font-size:20px; transition:all 0.3s ease; }
+.global-refresh:hover { transform:scale(1.08); }
+.global-refresh.loading { animation:spin 1s linear infinite; pointer-events:none; opacity:0.7; }
+@keyframes spin { to{transform:rotate(360deg);} }
+
+.main-container { max-width:860px; margin:0 auto; padding:80px 24px 60px; }
+.card { background:var(--card); border-radius:16px; padding:32px; margin-bottom:24px; box-shadow:0 2px 12px rgba(0,0,0,0.04); }
+.card-title { font-size:18px; font-weight:700; color:var(--text); padding-bottom:14px; margin-bottom:24px; border-bottom:2px solid #D6336C; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+
+/* About Me */
+.about-grid { display:flex; gap:32px; align-items:flex-start; }
+.about-avatar-wrap { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:10px; }
+.about-avatar { width:220px; height:220px; border-radius:16px; overflow:hidden; position:relative; cursor:pointer; background:linear-gradient(135deg,#fce4ec,#f8bbd0); display:flex; align-items:center; justify-content:center; transition:box-shadow 0.3s; }
+.about-avatar:hover { box-shadow:0 0 0 3px #FF6B9D; }
+.about-avatar img { width:100%; height:100%; object-fit:cover; }
+.about-avatar.pixelated img { image-rendering:pixelated; image-rendering:crisp-edges; }
+.about-avatar-placeholder { display:flex; flex-direction:column; align-items:center; color:#c49da1; font-size:14px; gap:8px; pointer-events:none; }
+.about-avatar-placeholder .icon { font-size:48px; opacity:0.6; }
+.avatar-input { display:none; }
+.avatar-actions { display:flex; gap:8px; }
+.avatar-btn { padding:6px 14px; border-radius:16px; border:1.5px solid #D6336C; background:transparent; color:#D6336C; font-size:12px; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+.avatar-btn:hover { background:#D6336C; color:#fff; }
+.avatar-btn.pixel-btn-avatar { border-color:#c97c87; color:#c97c87; }
+.avatar-btn.pixel-btn-avatar:hover { background:#c97c87; color:#fff; }
+.avatar-btn.pixel-btn-avatar.active { background:#c97c87; color:#fff; }
+
+.about-text { flex:1; min-width:0; }
+.about-status-tag { display:inline-block; padding:4px 14px; border-radius:20px; font-size:12px; font-weight:600; margin-bottom:14px; }
+.status-idle { background:#f5f5f5; color:#999; }
+.status-generated { background:#e8f5e9; color:#388e3c; }
+.about-bio { font-size:15px; line-height:1.8; color:var(--text); margin-bottom:16px; outline:none; padding:8px 12px; border-radius:12px; border:1px solid transparent; min-height:80px; transition:border-color 0.2s; }
+.about-bio:empty:before { content:attr(placeholder); color:#b0a0a5; font-style:italic; }
+.about-bio:focus { border-color:var(--border); background:#fafafa; }
+.update-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 20px; border-radius:20px; background:transparent; border:1.5px solid #D6336C; color:#D6336C; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s; font-family:inherit; }
+.update-btn:hover { background:#D6336C; color:#fff; }
+
+/* Basic Info */
+.info-table { width:100%; border-collapse:collapse; }
+.info-table td { padding:10px 12px; font-size:14px; border-bottom:1px solid var(--border); }
+.info-table td:first-child { width:130px; color:var(--text-secondary); font-weight:500; font-size:13px; }
+.info-input { width:100%; padding:8px 12px; border:1px solid transparent; border-radius:8px; font-size:14px; font-family:inherit; color:var(--text); background:transparent; outline:none; transition:all 0.2s; }
+.info-input:hover { border-color:#e8e0e2; }
+.info-input:focus { border-color:#FF6B9D; background:#fff; box-shadow:0 0 0 3px rgba(255,107,157,0.06); }
+.info-input::placeholder { color:#c0b0b5; font-style:italic; }
+
+/* Interests */
+.interests-grid { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.interest-tag { padding:8px 16px; border-radius:20px; background:#FFF5F7; border:1px solid rgba(255,107,157,0.2); color:#D6336C; font-size:13px; font-weight:500; display:inline-flex; align-items:center; gap:6px; }
+.interest-tag .remove { cursor:pointer; font-size:11px; opacity:0.5; }
+.interest-tag .remove:hover { opacity:1; }
+.interest-add { display:inline-flex; align-items:center; gap:4px; padding:8px 16px; border-radius:20px; border:1.5px dashed #d0c0c5; color:#b0a0a5; font-size:13px; cursor:pointer; background:transparent; font-family:inherit; }
+.interest-add:hover { border-color:#FF6B9D; color:#D6336C; }
+.interest-add-input { width:100px; padding:8px 12px; border:1.5px solid #FF6B9D; border-radius:20px; font-size:13px; font-family:inherit; outline:none; display:none; }
+.interest-add-input.active { display:inline-block; }
+
+/* Make Friends */
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-group.full { grid-column:1/-1; }
+.form-group label { font-size:13px; font-weight:600; color:var(--text-secondary); }
+.form-group input, .form-group select, .form-group textarea { padding:12px 16px; border:1px solid var(--border); border-radius:12px; font-size:14px; font-family:inherit; outline:none; transition:border-color 0.2s; background:#fafafa; color:var(--text); }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:#FF6B9D; }
+.form-group textarea { resize:vertical; min-height:80px; }
+.location-row { display:flex; gap:8px; align-items:flex-end; }
+.location-row .form-group { flex:1; }
+.location-detect { padding:12px 16px; border-radius:12px; border:1.5px dashed #d0c0c5; background:transparent; color:#b0a0a5; font-size:12px; cursor:pointer; font-family:inherit; white-space:nowrap; }
+.location-detect:hover { border-color:#FF6B9D; color:#D6336C; }
+.btn-submit { padding:12px 32px; border-radius:25px; border:none; background:linear-gradient(135deg,#FF6B9D,#D6336C); color:#fff; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:inherit; }
+
+/* ===== 折叠面板 ===== */
+.accordion { border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:12px; }
+.accordion-header { padding:14px 20px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; background:#fafafa; font-size:14px; font-weight:600; color:var(--text); }
+.accordion-header:hover { background:#f5f0f1; }
+.accordion-header .arrow { transition:transform 0.3s; font-size:12px; color:#b0a0a5; }
+.accordion.open .accordion-header .arrow { transform:rotate(180deg); }
+.accordion-body { display:none; padding:20px; border-top:1px solid var(--border); }
+.accordion.open .accordion-body { display:block; }
+
+.upload-dropzone { border:2px dashed rgba(255,107,157,0.2); border-radius:12px; padding:24px; text-align:center; cursor:pointer; position:relative; }
+.upload-dropzone:hover { border-color:#FF6B9D; background:rgba(255,107,157,0.02); }
+.upload-dropzone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.upload-dropzone .u-icon { font-size:28px; color:#D6336C; margin-bottom:6px; }
+.upload-dropzone .u-text { font-size:13px; color:var(--text-secondary); }
+.upload-dropzone .u-hint { font-size:11px; color:#c0b0b5; margin-top:4px; }
+
+/* 问卷内元素 */
+.quiz-question { margin-bottom:14px; padding:14px; border-radius:10px; background:#fafafa; border:1px solid var(--border); }
+.quiz-q-text { font-size:13px; font-weight:600; color:var(--text); margin-bottom:8px; }
+.quiz-scale { display:flex; justify-content:space-between; gap:4px; }
+.quiz-scale-item { flex:1; text-align:center; padding:8px 2px; border-radius:8px; cursor:pointer; font-size:11px; color:var(--text-secondary); border:1.5px solid transparent; background:#fff; }
+.quiz-scale-item:hover { border-color:#FF6B9D; }
+.quiz-scale-item.selected { border-color:#D6336C; background:#FFF5F7; color:#D6336C; font-weight:600; }
+.quiz-progress { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.quiz-progress-bar { flex:1; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.quiz-progress-fill { height:100%; background:linear-gradient(90deg,#FF6B9D,#D6336C); border-radius:2px; transition:width 0.3s; }
+.quiz-nav { display:flex; justify-content:space-between; margin-top:16px; }
+.quiz-page { display:none; }
+.quiz-page.active { display:block; }
+.quiz-type-tabs { display:flex; gap:8px; margin-bottom:16px; }
+.quiz-type-tab { padding:6px 16px; border-radius:16px; border:1.5px solid var(--border); background:var(--card); font-size:13px; cursor:pointer; font-family:inherit; color:var(--text-secondary); transition:all 0.2s; }
+.quiz-type-tab.active { border-color:#D6336C; background:#FFF5F7; color:#D6336C; font-weight:600; }
+.score-panel { margin-top:16px; background:linear-gradient(135deg,#FFF5F7,#fff); border:1px solid rgba(255,107,157,0.2); border-radius:12px; padding:20px; }
+.score-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.score-label { width:105px; font-size:12px; color:var(--text-secondary); text-align:right; }
+.score-bar { flex:1; height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+.score-bar-fill { height:100%; background:linear-gradient(90deg,#FF6B9D,#D6336C); border-radius:3px; transition:width 0.6s; }
+.score-val { width:26px; font-size:12px; font-weight:600; color:#D6336C; text-align:right; }
+
+/* 依恋类型结果 */
+.attachment-result { display:flex; align-items:center; gap:14px; padding:16px; border-radius:12px; margin-top:12px; }
+.attachment-result .big-type { font-size:20px; font-weight:700; }
+.attachment-result .type-desc { font-size:13px; line-height:1.6; }
+
+.save-indicator { font-size:11px; color:#66bb6a; opacity:0; transition:opacity 0.3s; margin-left:8px; }
+.save-indicator.visible { opacity:1; }
+
+.footer { text-align:center; padding:40px 24px; border-top:1px solid var(--border); font-size:13px; color:#b8a0a5; margin-top:40px; }
+.footer a { color:#D6336C; text-decoration:none; margin:0 12px; }
+
+@media (max-width:640px) {
+    .about-grid { flex-direction:column; align-items:center; text-align:center; }
+    .form-grid { grid-template-columns:1fr; }
+    .navbar { padding:0 20px; }
+    .global-refresh { right:16px; }
+    .quiz-scale { flex-wrap:wrap; }
+    .quiz-scale-item { min-width:50px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="/" class="nav-logo">Social</a>
+    <div class="nav-links">
+        <a href="/" class="nav-link">首页</a>
+        <a href="/workshop.html" class="nav-link">捏个分身</a>
+        <a href="/scene.html" class="nav-link">开始约会</a>
+        <a href="/report.html" class="nav-link">看看缘分</a>
+    </div>
+</nav>
+
+<button class="global-refresh" id="globalRefresh" onclick="generateProfile()" title="🎲 随机生成人设分身">
+    <i class="fa fa-refresh"></i>
+</button>
+
+<div class="main-container">
+
+    <!-- ====== About Me ====== -->
+    <div class="card">
+        <div class="card-title">🙋 About Me <span class="about-status-tag status-idle" id="statusTag">待生成</span><span class="save-indicator" id="bioSaveHint">已自动保存</span></div>
+        <div class="about-grid">
+            <div class="about-avatar-wrap">
+                <div class="about-avatar" id="avatarBox" onclick="document.getElementById('avatarInput').click()" title="点击上传照片">
+                    <div class="about-avatar-placeholder" id="avatarPlaceholder"><span class="icon">🤖</span><span>点击上传</span></div>
+                    <img id="avatarImg" src="" alt="头像" style="display:none">
+                </div>
+                <input type="file" class="avatar-input" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(this)">
+                <div class="avatar-actions">
+                    <button class="avatar-btn" onclick="document.getElementById('avatarInput').click()">📷 上传照片</button>
+                    <button class="avatar-btn pixel-btn-avatar" id="pixelToggle" onclick="togglePixelMode()">🎮 像素风</button>
+                </div>
+            </div>
+            <div class="about-text">
+                <div class="about-bio" id="bioText" contenteditable="true" placeholder="在这里写下你的自我介绍，或点击「随机生成人设」按钮自动填充..." oninput="autoSave()"></div>
+                <button class="update-btn" onclick="generateProfile()"><i class="fa fa-magic"></i> 🎲 随机生成人设</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== Basic Information ====== -->
+    <div class="card">
+        <div class="card-title">📋 Basic Information<span class="save-indicator" id="infoSaveHint">已自动保存</span></div>
+        <table class="info-table">
+            <tr><td>昵称</td><td><input class="info-input" id="infoName" placeholder="输入你的名字" oninput="autoSave()"></td></tr>
+            <tr><td>年龄</td><td><input class="info-input" id="infoAge" placeholder="例如：25" oninput="autoSave()"></td></tr>
+            <tr><td>HBD</td><td><input class="info-input" id="infoHBD" placeholder="例如：6月15日" oninput="autoSave()"></td></tr>
+            <tr><td>技能特长</td><td><input class="info-input" id="infoSkills" placeholder="例如：摄影 · 烹饪 · 日语" oninput="autoSave()"></td></tr>
+            <tr><td>性格类型</td><td><input class="info-input" id="infoPersonality" placeholder="例如：温和均衡" oninput="autoSave()"></td></tr>
+            <tr><td>MBTI</td><td><input class="info-input" id="infoMBTI" placeholder="例如：ENFP-A" oninput="autoSave()"></td></tr>
+            <tr><td>价值观</td><td><input class="info-input" id="infoValues" placeholder="例如：自由探索型" oninput="autoSave()"></td></tr>
+        </table>
+    </div>
+
+    <!-- ====== Interests ====== -->
+    <div class="card">
+        <div class="card-title">💡 Interests</div>
+        <div class="interests-grid" id="interestsGrid">
+            <button class="interest-add" id="interestAddBtn" onclick="showInterestInput()">+ 添加兴趣</button>
+            <input class="interest-add-input" id="interestAddInput" placeholder="输入兴趣..." onkeydown="if(event.key==='Enter')addInterest()" onblur="addInterest()">
+        </div>
+    </div>
+
+    <!-- ====== Make Friends ====== -->
+    <div class="card">
+        <div class="card-title">💕 Make Friends</div>
+        <p style="font-size:14px;color:var(--text-secondary);margin-bottom:20px;">设定你想要约会/交友的对象特征，辅助 AI 更精准地生成你的分身。</p>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>地理位置</label>
+                <div class="location-row">
+                    <input type="text" id="friendLocation" placeholder="例如：北京·海淀" oninput="autoSave()" style="flex:1">
+                    <button class="location-detect" id="locationDetect" onclick="detectLocation()">📍 自动检测</button>
+                </div>
+            </div>
+            <div class="form-group"><label>对方性别</label><select id="friendGender" onchange="autoSave()"><option value="">不限</option><option value="male">男</option><option value="female">女</option></select></div>
+            <div class="form-group"><label>共同兴趣</label><input type="text" id="friendInterests" placeholder="旅行, 美食, 电影" oninput="autoSave()"></div>
+            <div class="form-group"><label>关系程度期望</label><select id="friendLevel" onchange="autoSave()"><option value="casual">随缘交友</option><option value="serious">认真恋爱</option><option value="marriage">以结婚为目的</option></select></div>
+            <div class="form-group full"><label>补充描述</label><textarea id="friendNote" placeholder="描述你理想中的 TA..." oninput="autoSave()"></textarea></div>
+        </div>
+        <div style="margin-top:20px;text-align:right"><button class="btn-submit" onclick="saveFriendPrefs()">💾 保存交友偏好</button></div>
+    </div>
+
+    <!-- ====== 数据收集（折叠面板） ====== -->
+    <div class="card" style="background:#fafafa;box-shadow:none;border:1px solid var(--border);">
+        <div class="card-title" style="font-size:15px;border-bottom-color:#e0d0d5;">⚙️ 数据收集与测评</div>
+
+        <!-- 聊天上传 -->
+        <div class="accordion" id="accordionChat">
+            <div class="accordion-header" onclick="toggleAccordion('accordionChat')"><span>📂 上传聊天记录</span><span class="arrow">▼</span></div>
+            <div class="accordion-body">
+                <div class="upload-dropzone">
+                    <div class="u-icon">📄</div><div class="u-text">拖拽文件或点击上传</div>
+                    <div class="u-hint">支持 .txt / .json / 微信聊天导出文件</div>
+                    <input type="file" accept=".txt,.json" multiple onchange="handleChatFiles(this)">
+                </div>
+                <div id="chatFileStatus" style="margin-top:12px;font-size:13px;color:var(--text-secondary);"></div>
+            </div>
+        </div>
+
+        <!-- 问卷：Big Five + 依恋类型 合并在一个折叠面板 -->
+        <div class="accordion" id="accordionQuiz">
+            <div class="accordion-header" onclick="toggleAccordion('accordionQuiz')">
+                <span>📝 专业性格测评（Big Five + 依恋关系）</span><span class="arrow">▼</span>
+            </div>
+            <div class="accordion-body">
+                <!-- 类型切换 -->
+                <div class="quiz-type-tabs">
+                    <button class="quiz-type-tab active" onclick="switchQuizType('bigfive')" id="tabBigFive">🧠 Big Five 人格</button>
+                    <button class="quiz-type-tab" onclick="switchQuizType('attachment')" id="tabAttachment">💞 依恋关系类型</button>
+                </div>
+
+                <!-- Big Five 问卷 -->
+                <div id="quizBigFive">
+                    <div class="quiz-progress">
+                        <span style="font-size:12px;color:var(--text-secondary);">Big Five 进度</span>
+                        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="bfProgressFill" style="width:0%"></div></div>
+                        <span style="font-size:11px;color:var(--text-secondary);" id="bfProgressText">0/20</span>
+                    </div>
+                    <div id="bfPages"></div>
+                    <div class="quiz-nav">
+                        <button class="update-btn" id="bfPrevBtn" onclick="bfPrev()" style="visibility:hidden">← 上一页</button>
+                        <button class="update-btn" id="bfNextBtn" onclick="bfNext()">下一页 →</button>
+                        <button class="btn-submit" id="bfSubmitBtn" onclick="bfSubmit()" style="display:none">✅ 提交 Big Five</button>
+                    </div>
+                </div>
+
+                <!-- 依恋关系问卷 -->
+                <div id="quizAttachment" style="display:none">
+                    <div class="quiz-progress">
+                        <span style="font-size:12px;color:var(--text-secondary);">依恋测评进度</span>
+                        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="atProgressFill" style="width:0%"></div></div>
+                        <span style="font-size:11px;color:var(--text-secondary);" id="atProgressText">0/6</span>
+                    </div>
+                    <div id="atQuestions"></div>
+                    <div style="margin-top:16px;text-align:right">
+                        <button class="btn-submit" onclick="attachmentSubmit()">✅ 提交依恋测评</button>
+                    </div>
+                </div>
+
+                <!-- 结果面板 -->
+                <div id="quizResults" style="display:none"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="/">首页</a> · <a href="/scene.html">开始约会</a> · <a href="/report.html">看看缘分</a>
+        <br><br>&copy; 2026 Social · AI分身工坊
+    </div>
+</div>
+
+<script>
+// ========== Big Five 题库 (20题) ==========
+var BF_QUESTIONS = [
+    { id:'O1',dim:'openness',q:'我喜欢尝试新事物，对陌生领域充满好奇',page:1},
+    { id:'O2',dim:'openness',q:'我对艺术、音乐或文学有较强的感受力',page:1},
+    { id:'O3',dim:'openness',q:'我喜欢跳出常规思维，用新方法解决问题',page:1},
+    { id:'O4',dim:'openness_r',q:'我倾向于遵循传统和既定规则',page:1,reverse:true},
+    { id:'C1',dim:'conscientiousness',q:'做事情我通常会提前规划',page:2},
+    { id:'C2',dim:'conscientiousness',q:'我会把答应的事情做到位',page:2},
+    { id:'C3',dim:'conscientiousness',q:'我的工作/学习空间通常保持整洁有序',page:2},
+    { id:'C4',dim:'conscientiousness_r',q:'有时我会因追求细节而拖延进度',page:2,reverse:true},
+    { id:'E1',dim:'extraversion',q:'社交中我通常是主动发起话题的人',page:3},
+    { id:'E2',dim:'extraversion',q:'人多的时候我更有能量',page:3},
+    { id:'E3',dim:'extraversion',q:'我乐于成为众人关注的焦点',page:3},
+    { id:'E4',dim:'extraversion_r',q:'长时间社交后我需要独处来恢复精力',page:3,reverse:true},
+    { id:'A1',dim:'agreeableness',q:'看到别人遇困难我会自然想去帮忙',page:4},
+    { id:'A2',dim:'agreeableness',q:'我倾向于相信别人是善意的',page:4},
+    { id:'A3',dim:'agreeableness',q:'团队意见不合时我会优先寻找共识',page:4},
+    { id:'A4',dim:'agreeableness_r',q:'做错事我会直接指出，不太在意伤感情',page:4,reverse:true},
+    { id:'N1',dim:'neuroticism',q:'遇到压力时我容易焦虑烦躁',page:5},
+    { id:'N2',dim:'neuroticism',q:'我的情绪波动比较大',page:5},
+    { id:'N3',dim:'neuroticism',q:'我经常担忧未来可能发生的问题',page:5},
+    { id:'N4',dim:'neuroticism_r',q:'面对挫折我能很快恢复平静',page:5,reverse:true},
+];
+
+// ========== 依恋关系题库 (6题，基于ECR量表) ==========
+var AT_QUESTIONS = [
+    { id:'AT1',dim:'anxiety',q:'我担心对方不会像我在意他们那样在意我'},
+    { id:'AT2',dim:'anxiety',q:'我经常需要反复确认对方对我的感情'},
+    { id:'AT3',dim:'anxiety',q:'当对方没有及时回复我时，我会很不安'},
+    { id:'AT4',dim:'avoidance',q:'当对方跟我太亲近时，我会感到有些不舒服'},
+    { id:'AT5',dim:'avoidance',q:'我很难完全依赖别人，也不太喜欢别人太依赖我'},
+    { id:'AT6',dim:'avoidance',q:'即使没有恋爱关系，我也能过得很好很完整'},
+];
+
+var SCALE = [{v:1,label:'完全不符合'},{v:2,label:'不太符合'},{v:3,label:'一般'},{v:4,label:'比较符合'},{v:5,label:'完全符合'}];
+
+var bfAnswers = {}, atAnswers = {};
+var bfPage = 1, bfTotal = 5;
+var profileStatus = 'idle';
+var interestsList = [], chatTexts = [], pixelMode = false, avatarDataUrl = null, _saveTimer = null;
+
+// ========== 问卷类型切换 ==========
+var currentQuizType = 'bigfive';
+function switchQuizType(type) {
+    currentQuizType = type;
+    document.getElementById('tabBigFive').classList.toggle('active', type === 'bigfive');
+    document.getElementById('tabAttachment').classList.toggle('active', type === 'attachment');
+    document.getElementById('quizBigFive').style.display = type === 'bigfive' ? 'block' : 'none';
+    document.getElementById('quizAttachment').style.display = type === 'attachment' ? 'block' : 'none';
+    if (type === 'bigfive') renderBF();
+    if (type === 'attachment') renderAT();
+}
+
+// ========== Big Five 渲染 ==========
+function renderBF() {
+    var container = document.getElementById('bfPages');
+    var html = '';
+    for (var p=1; p<=bfTotal; p++) {
+        var qs = BF_QUESTIONS.filter(function(q){return q.page===p;});
+        html += '<div class="quiz-page'+(p===bfPage?' active':'')+'" data-bfpage="'+p+'">';
+        html += '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">第 '+p+'/'+bfTotal+' 页 — '+['开放性','尽责性','外向性','宜人性','情绪稳定性'][p-1]+'</div>';
+        qs.forEach(function(q) {
+            var sel = bfAnswers[q.id] || 0;
+            html += '<div class="quiz-question"><div class="quiz-q-text">'+q.q+'</div><div class="quiz-scale">';
+            SCALE.forEach(function(s) {
+                html += '<div class="quiz-scale-item'+(sel===s.v?' selected':'')+'" onclick="selectBF(\''+q.id+'\','+s.v+',this)">'+s.label+'</div>';
+            });
+            html += '</div></div>';
+        });
+        html += '</div>';
+    }
+    container.innerHTML = html;
+    updateBFNav();
+}
+
+function selectBF(qid, val, el) {
+    bfAnswers[qid] = val;
+    el.parentElement.parentElement.querySelectorAll('.quiz-scale-item').forEach(function(i){i.classList.remove('selected');});
+    el.classList.add('selected');
+    updateBFProgress();
+    autoSave();
+}
+
+function updateBFProgress() {
+    var a = Object.keys(bfAnswers).length;
+    document.getElementById('bfProgressFill').style.width = (a/20*100)+'%';
+    document.getElementById('bfProgressText').textContent = a+'/20';
+}
+
+function bfNext() { if(bfPage<bfTotal){bfPage++;goBFPage(bfPage);} }
+function bfPrev() { if(bfPage>1){bfPage--;goBFPage(bfPage);} }
+function goBFPage(p) {
+    bfPage=p;
+    document.querySelectorAll('#bfPages .quiz-page').forEach(function(pg){pg.classList.remove('active');});
+    var el = document.querySelector('#bfPages .quiz-page[data-bfpage="'+p+'"]');
+    if (el) el.classList.add('active');
+    updateBFNav();
+}
+function updateBFNav() {
+    document.getElementById('bfPrevBtn').style.visibility = bfPage===1?'hidden':'visible';
+    document.getElementById('bfNextBtn').style.display = bfPage===bfTotal?'none':'inline-flex';
+    document.getElementById('bfSubmitBtn').style.display = bfPage===bfTotal?'inline-flex':'none';
+}
+
+function bfSubmit() {
+    var missing = BF_QUESTIONS.filter(function(q){return !bfAnswers[q.id];});
+    if (missing.length > 0) { alert('还有 '+missing.length+' 题未答'); return; }
+
+    var dims = {}, cnts = {};
+    BF_QUESTIONS.forEach(function(q) {
+        var dim = q.dim.replace('_r','');
+        var s = bfAnswers[q.id];
+        if (q.reverse) s = 6 - s;
+        dims[dim] = (dims[dim]||0) + s;
+        cnts[dim] = (cnts[dim]||0) + 1;
+    });
+    var results = {};
+    Object.keys(dims).forEach(function(d) {
+        results[d] = Math.round((dims[d]/cnts[d] - 1) / 4 * 9 + 1);
+    });
+
+    // 回填 Basic Info（只填空的，不覆盖已有数据）
+    if (!document.getElementById('infoPersonality').value) {
+        var desc = [];
+        if (results.extraversion>=7) desc.push('外向活跃');
+        else if (results.extraversion<=3) desc.push('内向安静');
+        else desc.push('温和适中');
+        if (results.openness>=7) desc.push('开放好奇');
+        if (results.agreeableness>=7) desc.push('友善合作');
+        if (results.neuroticism<=3) desc.push('情绪稳定');
+        else if (results.neuroticism>=7) desc.push('情感细腻');
+        document.getElementById('infoPersonality').value = desc.join(' · ');
+    }
+    if (!document.getElementById('infoMBTI').value) {
+        var ei = results.extraversion>=6?'E':'I', sn = results.openness>=6?'N':'S';
+        var tf = results.agreeableness>=6?'F':'T', jp = results.conscientiousness>=6?'J':'P';
+        document.getElementById('infoMBTI').value = ei+sn+tf+jp+'-A';
+    }
+    if (!document.getElementById('infoValues').value) {
+        var vals = [];
+        if (results.openness>=7) vals.push('自由探索型');
+        if (results.conscientiousness>=7) vals.push('事业成就型');
+        if (results.agreeableness>=7) vals.push('家庭归属型');
+        if (results.neuroticism<=3) vals.push('稳定安全型');
+        document.getElementById('infoValues').value = vals.slice(0,2).join(' · ')||'平衡型';
+    }
+    autoSave();
+    showCombinedResults();
+    alert('✅ Big Five 测评完成！已填入 Basic Information（不覆盖已有数据）。');
+}
+
+// ========== 依恋关系渲染 ==========
+function renderAT() {
+    var container = document.getElementById('atQuestions');
+    var html = '';
+    AT_QUESTIONS.forEach(function(q) {
+        var sel = atAnswers[q.id] || 0;
+        html += '<div class="quiz-question"><div class="quiz-q-text">'+q.q+'</div><div class="quiz-scale">';
+        SCALE.forEach(function(s) {
+            html += '<div class="quiz-scale-item'+(sel===s.v?' selected':'')+'" onclick="selectAT(\''+q.id+'\','+s.v+',this)">'+s.label+'</div>';
+        });
+        html += '</div></div>';
+    });
+    container.innerHTML = html;
+    updateATProgress();
+}
+
+function selectAT(qid, val, el) {
+    atAnswers[qid] = val;
+    el.parentElement.parentElement.querySelectorAll('.quiz-scale-item').forEach(function(i){i.classList.remove('selected');});
+    el.classList.add('selected');
+    updateATProgress();
+    autoSave();
+}
+
+function updateATProgress() {
+    var a = Object.keys(atAnswers).length;
+    document.getElementById('atProgressFill').style.width = (a/6*100)+'%';
+    document.getElementById('atProgressText').textContent = a+'/6';
+}
+
+function attachmentSubmit() {
+    var missing = AT_QUESTIONS.filter(function(q){return !atAnswers[q.id];});
+    if (missing.length > 0) { alert('还有 '+missing.length+' 题未答'); return; }
+
+    var anxiety = 0, avoidance = 0;
+    AT_QUESTIONS.forEach(function(q) {
+        if (q.dim === 'anxiety') anxiety += atAnswers[q.id];
+        else avoidance += atAnswers[q.id];
+    });
+    anxiety = Math.round((anxiety/3 - 1) / 4 * 9 + 1);
+    avoidance = Math.round((avoidance/3 - 1) / 4 * 9 + 1);
+
+    var type, typeColor, typeEmoji, typeDesc;
+    if (anxiety >= 6 && avoidance >= 6) {
+        type = '恐惧型'; typeColor = '#e8e0f0'; typeEmoji = '💜';
+        typeDesc = '你渴望亲密却又害怕受伤，在关系中时而靠近时而远离。AI分身会帮你练习建立安全的依恋边界。';
+    } else if (anxiety >= 6) {
+        type = '焦虑型'; typeColor = '#fff0e0'; typeEmoji = '🧡';
+        typeDesc = '你在关系中需要大量确认和安全感。AI分身在对话中会给予更多正向反馈和稳定的陪伴节奏。';
+    } else if (avoidance >= 6) {
+        type = '回避型'; typeColor = '#e0f0f8'; typeEmoji = '💙';
+        typeDesc = '你习惯独立，不太容易完全敞开心扉。AI分身会在尊重你节奏的前提下慢慢建立信任。';
+    } else {
+        type = '安全型'; typeColor = '#e0f8e8'; typeEmoji = '💚';
+        typeDesc = '你在关系中情绪稳定，能健康地依赖他人。AI分身会保持这种舒适的互动模式，帮你扩大社交圈。';
+    }
+
+    atAnswers._result = { type:type, anxiety:anxiety, avoidance:avoidance };
+    autoSave();
+    showCombinedResults();
+    alert('✅ 依恋测评完成！你的类型：'+typeEmoji+' '+type+'型');
+}
+
+// ========== 合并结果展示 ==========
+function showCombinedResults() {
+    var container = document.getElementById('quizResults');
+    container.style.display = 'block';
+    var html = '';
+
+    // Big Five 结果
+    if (Object.keys(bfAnswers).length >= 20) {
+        var dims = {}, cnts = {};
+        BF_QUESTIONS.forEach(function(q) {
+            var d = q.dim.replace('_r','');
+            var s = bfAnswers[q.id];
+            if (q.reverse) s = 6 - s;
+            dims[d] = (dims[d]||0)+s; cnts[d] = (cnts[d]||0)+1;
+        });
+        var labels = {openness:'开放性',conscientiousness:'尽责性',extraversion:'外向性',agreeableness:'宜人性',neuroticism:'情绪敏感度'};
+        html += '<div style="font-size:14px;font-weight:600;color:#D6336C;margin-bottom:10px;">🧠 Big Five 人格（满分10）</div>';
+        Object.keys(dims).forEach(function(d) {
+            var s = Math.round((dims[d]/cnts[d]-1)/4*9+1);
+            html += '<div class="score-row"><span class="score-label">'+labels[d]+'</span><div class="score-bar"><div class="score-bar-fill" style="width:'+(s*10)+'%"></div></div><span class="score-val">'+s+'</span></div>';
+        });
+    }
+
+    // 依恋结果
+    if (atAnswers._result) {
+        var r = atAnswers._result;
+        html += '<div style="margin-top:16px;font-size:14px;font-weight:600;color:#D6336C;margin-bottom:10px;">💞 依恋关系</div>';
+        html += '<div class="attachment-result" style="background:'+r.typeColor+'">';
+        html += '<div class="big-type">'+r.type+'型</div>';
+        html += '<div class="type-desc">'+r.typeDesc+'</div></div>';
+        html += '<div class="score-row" style="margin-top:8px"><span class="score-label">焦虑维度</span><div class="score-bar"><div class="score-bar-fill" style="width:'+(r.anxiety*10)+'%"></div></div><span class="score-val">'+r.anxiety+'</span></div>';
+        html += '<div class="score-row"><span class="score-label">回避维度</span><div class="score-bar"><div class="score-bar-fill" style="width:'+(r.avoidance*10)+'%"></div></div><span class="score-val">'+r.avoidance+'</span></div>';
+    }
+
+    container.innerHTML = html;
+    container.scrollIntoView({behavior:'smooth'});
+}
+
+// ========== 像素风转换（星露谷风格：调色板+抖动算法） ==========
+function handleAvatarUpload(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        avatarDataUrl = e.target.result;
+        showAvatar(avatarDataUrl);
+        autoSave();
+    };
+    reader.readAsDataURL(file);
+}
+
+function showAvatar(src, applyPixel) {
+    var img = document.getElementById('avatarImg');
+    var placeholder = document.getElementById('avatarPlaceholder');
+    var box = document.getElementById('avatarBox');
+    img.style.display = 'block';
+    placeholder.style.display = 'none';
+    if (applyPixel || pixelMode) {
+        box.classList.add('pixelated');
+        stardewPixelate(src, function(result) { img.src = result; });
+    } else {
+        box.classList.remove('pixelated');
+        img.src = src;
+    }
+}
+
+function togglePixelMode() {
+    pixelMode = !pixelMode;
+    var btn = document.getElementById('pixelToggle');
+    if (pixelMode) {
+        btn.classList.add('active'); btn.textContent = '🎮 像素风 ✓';
+        if (avatarDataUrl) {
+            document.getElementById('avatarBox').classList.add('pixelated');
+            stardewPixelate(avatarDataUrl, function(result) {
+                document.getElementById('avatarImg').src = result;
+            });
+        }
+    } else {
+        btn.classList.remove('active'); btn.textContent = '🎮 像素风';
+        document.getElementById('avatarBox').classList.remove('pixelated');
+        if (avatarDataUrl) document.getElementById('avatarImg').src = avatarDataUrl;
+    }
+}
+
+// 星露谷风格像素转换：Floyd-Steinberg 抖动 + 精选调色板
+function stardewPixelate(src, callback) {
+    var img = new Image();
+    img.onload = function() {
+        var PIXEL = 40; // 目标像素尺寸
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        canvas.width = PIXEL; canvas.height = PIXEL;
+        ctx.drawImage(img, 0, 0, PIXEL, PIXEL);
+
+        // 精选肤色友好调色板（星露谷风格）
+        var palette = [
+            [245,225,210],[255,210,180],[230,175,150],[200,145,120],[170,110,90],
+            [245,200,185],[255,180,160],[220,150,130],[185,115,95],[150,80,60],
+            [250,240,230],[255,255,255],[240,235,225],[210,200,185],[180,170,155],
+            [60,45,35],[80,55,40],[100,70,50],[130,85,55],[160,110,75],
+            [50,40,60],[70,55,80],[90,70,100],[120,100,130],[150,130,160],
+            [40,50,70],[55,70,95],[70,90,120],[100,120,150],[130,155,180],
+            [180,80,80],[200,110,100],[220,140,120],[240,170,140],[255,200,160],
+            [80,130,100],[100,155,120],[130,175,140],[160,200,165],[190,225,190],
+        ];
+
+        var imgData = ctx.getImageData(0, 0, PIXEL, PIXEL);
+        var data = imgData.data;
+
+        // Floyd-Steinberg 抖动
+        for (var y = 0; y < PIXEL; y++) {
+            for (var x = 0; x < PIXEL; x++) {
+                var idx = (y * PIXEL + x) * 4;
+                var oldR = data[idx], oldG = data[idx+1], oldB = data[idx+2];
+
+                // 找最近调色板颜色
+                var best = 0, bestDist = Infinity;
+                for (var pi = 0; pi < palette.length; pi++) {
+                    var dr = oldR - palette[pi][0], dg = oldG - palette[pi][1], db = oldB - palette[pi][2];
+                    var dist = dr*dr + dg*dg + db*db;
+                    if (dist < bestDist) { bestDist = dist; best = pi; }
+                }
+
+                var newR = palette[best][0], newG = palette[best][1], newB = palette[best][2];
+                var errR = oldR - newR, errG = oldG - newG, errB = oldB - newB;
+
+                data[idx] = newR; data[idx+1] = newG; data[idx+2] = newB;
+
+                // 扩散误差到相邻像素
+                function spread(dx, dy, w) {
+                    var nx = x + dx, ny = y + dy;
+                    if (nx < 0 || nx >= PIXEL || ny < 0 || ny >= PIXEL) return;
+                    var ni = (ny * PIXEL + nx) * 4;
+                    data[ni] = Math.min(255, Math.max(0, data[ni] + errR * w));
+                    data[ni+1] = Math.min(255, Math.max(0, data[ni+1] + errG * w));
+                    data[ni+2] = Math.min(255, Math.max(0, data[ni+2] + errB * w));
+                }
+                spread(1, 0, 7/16);
+                spread(-1, 1, 3/16);
+                spread(0, 1, 5/16);
+                spread(1, 1, 1/16);
+            }
+        }
+        ctx.putImageData(imgData, 0, 0);
+
+        // 放大到220x220（nearest-neighbor = 锯齿像素）
+        var out = document.createElement('canvas');
+        out.width = 220; out.height = 220;
+        var octx = out.getContext('2d');
+        octx.imageSmoothingEnabled = false;
+        octx.drawImage(canvas, 0, 0, 220, 220);
+
+        callback(out.toDataURL('image/png'));
+    };
+    img.src = src;
+}
+
+// ========== 地理位置 ==========
+function detectLocation() {
+    var btn = document.getElementById('locationDetect');
+    btn.textContent = '检测中...'; btn.style.pointerEvents = 'none';
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            document.getElementById('friendLocation').value = pos.coords.latitude.toFixed(2)+', '+pos.coords.longitude.toFixed(2);
+            btn.textContent = '📍 已定位'; btn.style.pointerEvents = 'auto'; autoSave();
+        }, function() { detectByIP(btn); }, {timeout:5000});
+    } else { detectByIP(btn); }
+}
+function detectByIP(btn) {
+    fetch('https://ipapi.co/json/').then(function(r){return r.json();}).then(function(d) {
+        document.getElementById('friendLocation').value = [d.city,d.region,d.country_name].filter(Boolean).join(' · ');
+        btn.textContent = '📍 已定位'; btn.style.pointerEvents = 'auto'; autoSave();
+    }).catch(function() {
+        btn.textContent = '📍 自动检测'; btn.style.pointerEvents = 'auto';
+    });
+}
+
+// ========== 兴趣 ==========
+function showInterestInput() { document.getElementById('interestAddBtn').style.display='none'; var i=document.getElementById('interestAddInput'); i.classList.add('active'); i.style.display='inline-block'; i.focus(); }
+function addInterest() { var i=document.getElementById('interestAddInput'),v=i.value.trim(); i.value='';i.classList.remove('active');i.style.display='none';document.getElementById('interestAddBtn').style.display='inline-flex'; if(!v||interestsList.indexOf(v)>=0)return; interestsList.push(v);renderInterests();autoSave(); }
+function removeInterest(idx) { interestsList.splice(idx,1);renderInterests();autoSave(); }
+function renderInterests() { document.getElementById('interestsGrid').innerHTML = interestsList.map(function(t,i){return '<span class="interest-tag">'+t+' <span class="remove" onclick="removeInterest('+i+')">✕</span></span>';}).join('')+'<button class="interest-add" id="interestAddBtn" onclick="showInterestInput()">+ 添加兴趣</button><input class="interest-add-input" id="interestAddInput" placeholder="输入兴趣..." onkeydown="if(event.key===\'Enter\')addInterest()" onblur="addInterest()">'; }
+
+// ========== 持久化 ==========
+var FIELD_IDS = ['bioText','infoName','infoAge','infoHBD','infoSkills','infoPersonality','infoMBTI','infoValues','friendLocation','friendGender','friendInterests','friendLevel','friendNote'];
+function collectAllData() {
+    var d = {interests:interestsList,bfAnswers:bfAnswers,atAnswers:atAnswers,chatTexts:chatTexts,status:profileStatus,pixelMode:pixelMode,avatarDataUrl:avatarDataUrl};
+    FIELD_IDS.forEach(function(id){var el=document.getElementById(id);if(!el)return;d[id]=el.contentEditable==='true'?el.innerText:el.value;});
+    return d;
+}
+function autoSave() { clearTimeout(_saveTimer); _saveTimer = setTimeout(function(){localStorage.setItem('social_workshop',JSON.stringify(collectAllData()));['bioSaveHint','infoSaveHint'].forEach(function(id){var el=document.getElementById(id);if(el){el.classList.add('visible');setTimeout(function(){el.classList.remove('visible');},1500);}});},400); }
+function loadFromStorage() {
+    var raw = localStorage.getItem('social_workshop'); if(!raw) return;
+    try { var d=JSON.parse(raw);
+        FIELD_IDS.forEach(function(id){var el=document.getElementById(id);if(!el||d[id]===undefined)return;if(el.contentEditable==='true')el.innerText=d[id];else el.value=d[id];});
+        interestsList=d.interests||[]; chatTexts=d.chatTexts||[]; profileStatus=d.status||'idle'; pixelMode=d.pixelMode||false; avatarDataUrl=d.avatarDataUrl||null;
+        if(d.bfAnswers){bfAnswers=d.bfAnswers;updateBFProgress();}
+        if(d.atAnswers){atAnswers=d.atAnswers;updateATProgress();if(atAnswers._result)showCombinedResults();}
+        if(Object.keys(bfAnswers).length>=20) showCombinedResults();
+        renderInterests(); renderBF(); renderAT();
+        if(avatarDataUrl)showAvatar(avatarDataUrl,pixelMode);
+        if(profileStatus==='generated'){updateStatusUI('generated');var mb2=document.getElementById('goMatchBtn');if(mb2)mb2.style.display='inline-flex';}
+        if(chatTexts.length>0)document.getElementById('chatFileStatus').innerHTML=chatTexts.map(function(_,i){return '<div style="padding:4px 0">✅ 已加载 ('+chatTexts[i].length+' 字)</div>';}).join('');
+        if(pixelMode){var pb=document.getElementById('pixelToggle');pb.classList.add('active');pb.textContent='🎮 像素风 ✓';}
+    }catch(e){console.warn('恢复失败:',e);}
+}
+
+// ========== 聊天/折叠/交友 ==========
+function handleChatFiles(input) { var files=Array.from(input.files||[]);if(!files.length)return;var s=document.getElementById('chatFileStatus');s.innerHTML='';chatTexts=[];var l=0;files.forEach(function(f,i){var r=new FileReader();r.onload=function(e){chatTexts[i]=e.target.result;l++;s.innerHTML=files.map(function(f2,j){return '<div style="padding:4px 0">'+(chatTexts[j]?'✅':'⏳')+' '+f2.name+'</div>';}).join('');if(l===files.length)autoSave();};r.readAsText(f,'UTF-8');}); }
+function toggleAccordion(id) { document.getElementById(id).classList.toggle('open'); }
+function saveFriendPrefs() { autoSave(); alert('✅ 交友偏好已保存！'); }
+
+// ========== 🎲 随机生成人设 ==========
+function generateProfile() {
+    if (profileStatus==='loading') return;
+    var btn=document.getElementById('globalRefresh'); btn.classList.add('loading');
+    profileStatus='loading'; updateStatusUI('loading');
+
+    setTimeout(function() {
+        var p = buildAiProfile();
+        // 🔧 只填空白字段，不覆盖已有数据
+        // 人设档案库全量填充
+        document.getElementById('infoName').value = p.name;
+        document.getElementById('bioText').innerText = p.bio;
+        document.getElementById('infoAge').value = p.age;
+        document.getElementById('infoHBD').value = p.hbd;
+        document.getElementById('infoSkills').value = p.skills;
+        document.getElementById('infoPersonality').value = p.personality;
+        document.getElementById('infoMBTI').value = p.mbti;
+        document.getElementById('infoValues').value = p.values;
+        interestsList = p.interests; renderInterests();
+        btn.classList.remove('loading');
+        profileStatus='generated'; updateStatusUI('generated'); autoSave();
+    }, 2000);
+}
+
+// ========== 人设档案库（8个完整模版，保证一致性） ==========
+var PERSONA_DB = [
+    {name:'林悦',age:24,gender:'female',hbd:'3月12日',skills:'手冲咖啡 · 插画设计 · 尤克里里',personality:'温和均衡 · 文艺清新',mbti:'INFP-T',values:'自由探索型 · 成长学习型',interests:['咖啡','插画','独立音乐','旅行','烘焙','逛书店'],bio:'你好，我是林悦。我是一个独立插画师，周末最喜欢泡在咖啡馆里画画。B型血，INFP人格，相信生活应该有诗意和远方。最近在学尤克里里，虽然弹得还不怎么样，但每次拨弦的时候都觉得世界变温柔了。希望遇到一个能一起看展、一起发呆的人。'},
+    {name:'陈墨',age:27,gender:'male',hbd:'8月5日',skills:'数据分析 · 摄影 · 攀岩',personality:'理性逻辑 · 外冷内热',mbti:'INTJ-T',values:'事业成就型 · 自由探索型',interests:['摄影','攀岩','科技数码','天文学','围棋','科幻小说'],bio:'你好，我是陈墨。在互联网公司做数据科学，业余时间喜欢背着相机去拍星轨。AB型血，INTJ人格，话不多但心里有片宇宙。最近读完《三体》第三遍，依然被震撼。希望能遇到一个有趣的人，一起探索这个世界未尽的角落。'},
+    {name:'苏糖',age:22,gender:'female',hbd:'6月28日',skills:'烘焙 · 日语N2 · 长跑',personality:'活泼开朗 · 话痨分享型',mbti:'ENFP-A',values:'家庭归属型 · 成长学习型',interests:['烘焙','日剧','长跑','宠物','桌游','星座'],bio:'嗨！我是苏糖～朋友们说我是行走的小太阳。在一家烘焙工作室做甜品师，最拿手的是提拉米苏。O型血，ENFP人格，遇到开心的事会忍不住分享给全世界。养了一只叫布丁的柯基。希望能遇到一个愿意陪我疯、也能陪我安静看日落的人。'},
+    {name:'沈岸',age:29,gender:'male',hbd:'11月20日',skills:'烹饪 · 木工 · 潜水执照',personality:'成熟稳重 · 温暖细腻',mbti:'ISFJ-T',values:'家庭归属型 · 稳定安全型',interests:['烹饪','木工','潜水','旅行','古典音乐','园艺'],bio:'你好，我是沈岸。在一家设计工作室做产品经理，同时也是个业余木匠。A型血，ISFJ人格，喜欢把粗糙的木头变成有温度的物件。每年会去一个没去过的地方潜水，海底的世界让人忘记一切烦恼。希望能遇到一个愿意一起慢慢生活的人。'},
+    {name:'姜莱',age:25,gender:'female',hbd:'9月17日',skills:'服装设计 · 法语 · 瑜伽教练',personality:'独立强势 · 感性温暖',mbti:'ENTJ-A',values:'自由探索型 · 事业成就型',interests:['时尚设计','法语','瑜伽','看展','爵士乐','精酿啤酒'],bio:'Bonjour！我是姜莱，一个在创业的服装设计师。从小就想做自己的品牌，现在正在这条路上狂奔。A型血，ENTJ人格，做事雷厉风行但内心其实很柔软。周末喜欢去美术馆看新展，或者去精酿酒吧尝尝新口味。希望遇到一个不会被我的日程表吓跑、也懂欣赏生活美感的人。'},
+    {name:'陆川',age:26,gender:'male',hbd:'2月14日',skills:'吉他弹唱 · 写作 · 攀岩',personality:'幽默风趣 · 文艺清新',mbti:'ENFP-A',values:'成长学习型 · 自由探索型',interests:['吉他','写作','户外运动','脱口秀','诗歌','公路旅行'],bio:'你好，我叫陆川，在广告公司做文案。B型血，ENFP人格，属于那种想到什么就会立刻去做的人。周末经常开着车去不知名的小镇瞎逛，车里永远放着吉他——虽然弹得一般，但每次在篝火旁弹给朋友听的时候都很开心。希望遇到一个不嫌弃我偶尔太跳脱、也愿意一起在路上的人。'},
+    {name:'温晴',age:23,gender:'female',hbd:'12月1日',skills:'花艺设计 · 心理咨询师 · 钢琴',personality:'内向安静 · 善良细腻',mbti:'ISFP-T',values:'稳定安全型 · 家庭归属型',interests:['花艺','心理学','钢琴','养猫','诗集','雨天散步'],bio:'你好，我是温晴。在一家心理咨询中心工作，同时也是个花艺爱好者。O型血，ISFP人格，话不多但心里什么都知道。我的阳台上种满了花，还养了两只流浪猫。周末最喜欢下雨天——窝在沙发里看书、弹钢琴、听雨声。希望遇到一个能静静待在一起也很舒服的人。'},
+    {name:'江屿',age:28,gender:'male',hbd:'5月8日',skills:'全栈开发 · 调酒 · 冲浪',personality:'外向活跃 · 冒险精神',mbti:'ESTP-A',values:'自由探索型 · 事业成就型',interests:['编程','调酒','冲浪','摩托车','科幻','露营'],bio:'Hey！我是江屿，一个爱冲浪的程序员。AB型血，ESTP人格，周末不是在海上就是在去海边的路上。在科技公司写代码是工作，在酒吧调酒是爱好——我调的长岛冰茶朋友们说能拿出手。骑摩托车环过台湾岛，下一个目标是骑去西藏。希望遇到一个不害怕冒险、也享受当下的人。'}
+];
+var _lastPersonaIndex = -1;
+
+function buildAiProfile() {
+    var idx;
+    do { idx = Math.floor(Math.random() * PERSONA_DB.length); }
+    while (idx === _lastPersonaIndex && PERSONA_DB.length > 1);
+    _lastPersonaIndex = idx;
+    var p = PERSONA_DB[idx];
+    var profile = {name:p.name,age:p.age,hbd:p.hbd,gender:p.gender,skills:p.skills,personality:p.personality,mbti:p.mbti,values:p.values,interests:p.interests.slice(),bio:p.bio};
+    localStorage.setItem('social_my_persona', JSON.stringify(profile));
+    return profile;
+}
+
+function updateStatusUI(s) { var t=document.getElementById('statusTag'),m={idle:{text:'待生成',bg:'#f5f5f5',c:'#999'},loading:{text:'生成中...',bg:'#fff3e0',c:'#e65100'},generated:{text:'已生成',bg:'#e8f5e9',c:'#388e3c'}}[s]||{}; t.textContent=m.text||''; t.style.background=m.bg||''; t.style.color=m.c||''; }
+
+// ========== 启动 ==========
+renderInterests(); renderBF(); renderAT();
+loadFromStorage();
+// ========== 跳转匹配大厅 ==========
+function goToMatch() {
+    autoSave();
+    var persona = {
+        name: document.getElementById('infoName').value || '未命名',
+        age: document.getElementById('infoAge').value || '',
+        hbd: document.getElementById('infoHBD').value || '',
+        skills: document.getElementById('infoSkills').value || '',
+        personality: document.getElementById('infoPersonality').value || '',
+        mbti: document.getElementById('infoMBTI').value || '',
+        values: document.getElementById('infoValues').value || '',
+        interests: interestsList,
+        bio: document.getElementById('bioText').innerText || '',
+        avatarDataUrl: avatarDataUrl || null,
+        pixelMode: pixelMode || false,
+    };
+    localStorage.setItem('social_my_persona', JSON.stringify(persona));
+    window.location.href = 'match.html';
+}
+
+console.log('🤖 AI分身工坊 · 8人设档案库 · 星露谷像素风 · BigFive+依恋测评');
+</script>
+</body>
+</html>

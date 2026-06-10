@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>匹配报告 - Social</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+:root { --rose:#d9b2b5; --rose-light:#ecd5d7; --rose-deep:#c49da1; --accent:#c97c87; --accent2:#e8a0a8; --bg:#fdf4f4; --text:#3d2c2e; --nav-bg:#ECDDC8; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); font-family:'Inter','PingFang SC',-apple-system,sans-serif; color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased; }
+
+.nav-bar { display:flex; align-items:center; justify-content:space-between; padding:14px 32px; background:var(--nav-bg); border-bottom:1px solid rgba(0,0,0,0.04); position:sticky; top:0; z-index:100; }
+.nav-logo { font-size:20px; font-weight:700; background:linear-gradient(135deg,#D6336C,#FF6B9D); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-decoration:none; }
+.nav-links { display:flex; gap:28px; }
+.nav-link { color:#fff; text-decoration:none; font-size:14px; text-shadow:0 1px 2px rgba(0,0,0,0.08); font-family:'Noto Serif SC',serif; }
+
+.main-container { max-width:900px; margin:0 auto; padding:32px 24px 60px; }
+.card { background:#fff; border-radius:18px; padding:28px; margin-bottom:20px; box-shadow:0 2px 12px rgba(0,0,0,0.03); border:1px solid rgba(201,124,135,0.06); }
+.card-title { font-size:18px; font-weight:700; color:var(--text); margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid #D6336C; display:flex; align-items:center; gap:8px; }
+
+/* 总分区 */
+.score-hero { text-align:center; margin-bottom:32px; }
+.score-ring-wrap { position:relative; display:inline-block; }
+.score-ring svg { transform:rotate(-90deg); }
+.score-number { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:52px; font-weight:800; }
+.score-label { font-size:13px; color:#a89497; margin-top:-6px; }
+
+/* 双人卡片 */
+.couple-row { display:flex; align-items:center; justify-content:center; gap:36px; margin-bottom:28px; }
+.person { text-align:center; }
+.person-avatar { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 8px; }
+.person-avatar.self { background:linear-gradient(135deg,#FFE4EC,#FF6B9D); }
+.person-avatar.match { background:linear-gradient(135deg,#e8eaf6,#c5cae9); }
+.person-name { font-size:15px; font-weight:600; }
+.person-tag { font-size:11px; color:#a89497; }
+.vs { font-size:22px; font-weight:800; color:#D6336C; }
+
+/* 维度条 */
+.dim-item { margin-bottom:14px; }
+.dim-header { display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px; }
+.dim-bar { height:8px; background:#f5e8ea; border-radius:4px; overflow:hidden; }
+.dim-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#c97c87,#e8a0a8); transition:width 1s; }
+
+/* AI洞察 */
+.ai-insight { padding:16px; background:linear-gradient(135deg,rgba(255,107,157,0.04),rgba(201,124,135,0.02)); border-radius:12px; border:1px solid rgba(201,124,135,0.08); }
+.ai-insight .ai-label { font-size:12px; font-weight:700; color:#D6336C; margin-bottom:6px; }
+.ai-insight .ai-text { font-size:13px; color:var(--text); line-height:1.7; }
+.ai-loading { color:#c0b0b5; font-style:italic; }
+
+/* 雷达图 */
+.radar-wrap { display:flex; justify-content:center; }
+
+/* 历史 */
+.history-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #f8f0f1; font-size:13px; }
+.history-item:last-child { border-bottom:none; }
+.history-emoji { font-size:18px; }
+
+.btn { padding:10px 24px; border-radius:22px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s; font-family:inherit; }
+.btn-primary { background:linear-gradient(135deg,#FF6B9D,#D6336C); color:#fff; border:none; }
+.btn-outline { background:transparent; border:1.5px solid rgba(201,124,135,0.2); color:#a89497; }
+.btn-outline:hover { border-color:#D6336C; color:#D6336C; }
+.actions { display:flex; gap:14px; margin-top:24px; justify-content:center; }
+
+.loading-dots { display:inline-flex; gap:4px; }
+.loading-dots span { width:6px; height:6px; border-radius:50%; background:#D6336C; animation:dotBounce 1.4s infinite; }
+.loading-dots span:nth-child(2){animation-delay:0.2s;} .loading-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes dotBounce { 0%,80%,100%{transform:scale(0);opacity:0.3;} 40%{transform:scale(1);opacity:1;} }
+
+@media (max-width:640px) { .couple-row { gap:20px; } .nav-bar { padding:14px 16px; } }
+</style>
+</head>
+<body>
+
+<nav class="nav-bar">
+    <a href="/" class="nav-logo">Social</a>
+    <div class="nav-links">
+        <a href="/" class="nav-link">首页</a>
+        <a href="/workshop.html" class="nav-link">捏个分身</a>
+        <a href="/scene.html" class="nav-link">开始约会</a>
+        <a href="/report.html" class="nav-link">看看缘分</a>
+    </div>
+</nav>
+
+<div class="main-container">
+
+    <!-- ====== 总分 ====== -->
+    <div class="score-hero" id="scoreHero">
+        <div class="score-ring-wrap">
+            <svg class="score-ring" width="160" height="160" viewBox="0 0 160 160">
+                <defs><linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#c97c87"/><stop offset="100%" stop-color="#e8a0a8"/></linearGradient></defs>
+                <circle cx="80" cy="80" r="68" fill="none" stroke="#f0e0e3" stroke-width="10"/>
+                <circle cx="80" cy="80" r="68" fill="none" stroke="url(#sg)" stroke-width="10" stroke-linecap="round" stroke-dasharray="427" stroke-dashoffset="427" id="scoreCircle"/>
+            </svg>
+            <div class="score-number" id="scoreNum" style="background:linear-gradient(135deg,#c97c87,#e8a0a8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">--</div>
+        </div>
+        <div class="score-label">综合匹配度评分</div>
+    </div>
+
+    <!-- ====== 双方 ====== -->
+    <div class="couple-row" id="coupleRow"></div>
+
+    <!-- ====== 四维评分 ====== -->
+    <div class="card">
+        <div class="card-title">📊 四维好感度</div>
+        <div id="dimensions"></div>
+    </div>
+
+    <!-- ====== 雷达图 ====== -->
+    <div class="card">
+        <div class="card-title">🎯 兼容性雷达</div>
+        <div class="radar-wrap"><canvas id="radar" width="300" height="300"></canvas></div>
+    </div>
+
+    <!-- ====== AI洞察 ====== -->
+    <div class="card">
+        <div class="card-title">🤖 AI 深度洞察</div>
+        <div class="ai-insight" id="aiInsight">
+            <div class="ai-label">正在分析你的数据...</div>
+            <div class="ai-text ai-loading"><span class="loading-dots"><span></span><span></span><span></span></span></div>
+        </div>
+    </div>
+
+    <!-- ====== 约会日记 ====== -->
+    <div class="card" id="diaryCard" style="display:none">
+        <div class="card-title">🌱 我的约会日记</div>
+        <div id="diaryContent" style="font-size:13px;color:var(--text);line-height:1.8;"></div>
+    </div>
+
+    <!-- ====== 匹配历史 ====== -->
+    <div class="card">
+        <div class="card-title">📜 历史记录</div>
+        <div id="historyList"></div>
+    </div>
+
+    <div class="actions">
+        <a href="/scene.html" class="btn btn-primary">💕 继续约会</a>
+        <a href="/" class="btn btn-outline">🏠 返回首页</a>
+    </div>
+</div>
+
+<script>
+var DEEPSEEK_KEY = 'sk-your-api-key-here';
+var DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
+
+// ===== 加载真实数据 =====
+var myPersona = null, matchPersona = null, matchHistory = [], diaryData = null;
+try { myPersona = JSON.parse(localStorage.getItem('social_my_persona')||'null'); } catch(e){}
+try { matchPersona = JSON.parse(localStorage.getItem('social_match_persona')||'null'); } catch(e){}
+try { matchHistory = JSON.parse(localStorage.getItem('social_match_history')||'[]'); } catch(e){}
+try { diaryData = JSON.parse(localStorage.getItem('social_diary')||'null'); } catch(e){}
+
+// 从URL参数读取
+var params = new URLSearchParams(location.search);
+var urlAffection = parseInt(params.get('affection')) || 0;
+var urlRounds = parseInt(params.get('rounds')) || 0;
+
+// ===== 计算分数 =====
+var totalScore = urlAffection > 0 ? Math.min(98, Math.max(30, Math.round((urlAffection+100)/2)))
+    : (matchPersona ? 70 + Math.floor(Math.random()*20) : 50);
+var dims = {
+    topic: urlAffection>0 ? Math.round(70+urlAffection*0.2) : (matchPersona?72+Math.floor(Math.random()*18):60),
+    flow: urlAffection>0 ? Math.round(68+urlAffection*0.25) : (matchPersona?68+Math.floor(Math.random()*20):55),
+    emotion: urlAffection>0 ? Math.round(75+urlAffection*0.15) : (matchPersona?78+Math.floor(Math.random()*14):50),
+    style: urlAffection>0 ? Math.round(65+urlAffection*0.22) : (matchPersona?70+Math.floor(Math.random()*16):52),
+};
+
+// ===== 渲染 =====
+(function renderAll() {
+    // 分数环
+    var circ = 427;
+    document.getElementById('scoreCircle').setAttribute('stroke-dashoffset', circ - (totalScore/100)*circ);
+    document.getElementById('scoreNum').textContent = totalScore;
+
+    // 双人
+    var couple = document.getElementById('coupleRow');
+    if (myPersona) {
+        couple.innerHTML += '<div class="person"><div class="person-avatar self">'+(myPersona.gender==='male'?'🧑‍💻':'👩‍🎨')+'</div><div class="person-name">'+(myPersona.name||'我')+'</div><div class="person-tag">'+(myPersona.personality||'')+'</div></div>';
+    }
+    couple.innerHTML += '<div class="vs">💗</div>';
+    if (matchPersona) {
+        couple.innerHTML += '<div class="person"><div class="person-avatar match">'+(matchPersona.gender==='male'?'🧑‍💻':'👩‍🎨')+'</div><div class="person-name">'+(matchPersona.name||'TA')+'</div><div class="person-tag">'+(matchPersona.personality||'')+'</div></div>';
+    } else {
+        couple.innerHTML += '<div class="person"><div class="person-avatar match" style="background:#f0f0f0;"><span style="opacity:0.3;">✨</span></div><div class="person-name">待匹配</div><div class="person-tag">去心动信号站匹配吧</div></div>';
+    }
+
+    // 维度条
+    var dimLabels = [
+        {key:'topic',label:'💬 话题共鸣',val:dims.topic},
+        {key:'flow',label:'🔄 对话流畅度',val:dims.flow},
+        {key:'emotion',label:'💗 情绪兼容度',val:dims.emotion},
+        {key:'style',label:'🎭 风格契合度',val:dims.style},
+    ];
+    document.getElementById('dimensions').innerHTML = dimLabels.map(function(d){
+        return '<div class="dim-item"><div class="dim-header"><span>'+d.label+'</span><span>'+d.val+'/100</span></div><div class="dim-bar"><div class="dim-fill" style="width:'+d.val+'%"></div></div></div>';
+    }).join('');
+
+    // 雷达图
+    setTimeout(function(){ drawRadar([dims.topic,dims.flow,dims.emotion,dims.style]); }, 300);
+
+    // 历史记录
+    var hist = document.getElementById('historyList');
+    var likedCount = matchHistory.filter(function(h){return h.liked;}).length;
+    var nopedCount = matchHistory.filter(function(h){return !h.liked;}).length;
+    hist.innerHTML = '<div style="display:flex;gap:24px;margin-bottom:12px;font-size:13px;">'+
+        '<span>💕 喜欢 '+(likedCount||0)+' 次</span><span>👋 跳过 '+(nopedCount||0)+' 次</span>'+
+        '<span>📅 共 '+(matchHistory.length||0)+' 条记录</span></div>';
+    if (matchHistory.length > 0) {
+        hist.innerHTML += matchHistory.slice(0,10).map(function(h){
+            return '<div class="history-item"><span class="history-emoji">'+(h.liked?'💕':'👋')+'</span>'+
+                '<span>'+(h.name||'???')+' · '+(h.age||'?')+'岁</span>'+
+                '<span style="margin-left:auto;font-size:11px;color:#c0b0b5;">'+(h.time||'')+'</span></div>';
+        }).join('');
+    } else {
+        hist.innerHTML += '<div style="text-align:center;padding:20px;color:#b0a0a5;">暂无匹配记录，去心动信号站开始匹配吧</div>';
+    }
+
+    // 日记
+    if (diaryData && (diaryData.note || diaryData.discovery)) {
+        var dc = document.getElementById('diaryCard');
+        dc.style.display = 'block';
+        var content = '';
+        if (diaryData.note) content += '<div style="margin-bottom:8px;"><b>💭 我的笔记：</b>'+diaryData.note+'</div>';
+        if (diaryData.discovery) content += '<div><b>✨ 新鲜发现：</b>'+diaryData.discovery+'</div>';
+        document.getElementById('diaryContent').innerHTML = content;
+    }
+})();
+
+// ===== Radar =====
+function drawRadar(vals) {
+    var canvas = document.getElementById('radar');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var w=canvas.width, h=canvas.height, cx=w/2, cy=h/2, n=4, mr=120;
+    ctx.clearRect(0,0,w,h);
+    var labels = ['话题共鸣','对话流畅度','情绪兼容','风格契合'];
+    for (var s=1; s<=5; s++) {
+        var r = (mr/5)*s;
+        ctx.beginPath();
+        for (var i=0;i<n;i++) {
+            var a = (Math.PI*2/n)*i - Math.PI/2;
+            var x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r;
+            i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = s===5?'rgba(201,124,135,0.15)':'rgba(201,124,135,0.06)';
+        ctx.stroke();
+    }
+    for (var i=0;i<n;i++) {
+        var a=(Math.PI*2/n)*i-Math.PI/2;
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(a)*mr,cy+Math.sin(a)*mr);
+        ctx.strokeStyle='rgba(201,124,135,0.08)'; ctx.stroke();
+    }
+    ctx.beginPath();
+    for (var i=0;i<n;i++) {
+        var a=(Math.PI*2/n)*i-Math.PI/2;
+        var x=cx+Math.cos(a)*mr*(vals[i]/100), y=cy+Math.sin(a)*mr*(vals[i]/100);
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.fillStyle='rgba(201,124,135,0.12)'; ctx.fill();
+    ctx.strokeStyle='#c97c87'; ctx.lineWidth=2; ctx.stroke();
+    for (var i=0;i<n;i++) {
+        var a=(Math.PI*2/n)*i-Math.PI/2;
+        var x=cx+Math.cos(a)*mr*(vals[i]/100), y=cy+Math.sin(a)*mr*(vals[i]/100);
+        ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fillStyle='#c97c87'; ctx.fill();
+        ctx.fillStyle='#2D1B2E'; ctx.font='bold 11px Inter,PingFang SC,sans-serif'; ctx.textAlign='center';
+        ctx.fillText(labels[i], cx+Math.cos(a)*(mr+24), cy+Math.sin(a)*(mr+24));
+        ctx.fillStyle='#D6336C'; ctx.font='bold 10px Inter,sans-serif';
+        ctx.fillText(vals[i], cx+Math.cos(a)*(mr*vals[i]/100+14), cy+Math.sin(a)*(mr*vals[i]/100+14));
+    }
+}
+
+// ===== AI洞察（调用DeepSeek） =====
+(async function generateAIInsight() {
+    var insight = document.getElementById('aiInsight');
+    if (!myPersona && !matchPersona && matchHistory.length===0) {
+        insight.innerHTML = '<div class="ai-label">🤖 AI 洞察</div><div class="ai-text" style="color:#b0a0a5;">完成匹配或约会后，AI 将为你生成个性化分析。</div>';
+        return;
+    }
+
+    var prompt = '你是Social平台的AI约会顾问。请根据以下用户数据，生成一段200字以内的中文洞察分析，风格温暖、有洞察力。\n\n';
+    if (myPersona) prompt += '用户信息：'+JSON.stringify({name:myPersona.name,personality:myPersona.personality,mbti:myPersona.mbti,interests:myPersona.interests,values:myPersona.values})+'\n';
+    if (matchPersona) prompt += '匹配对象：'+JSON.stringify({name:matchPersona.name,personality:matchPersona.personality,tags:matchPersona.tags})+'\n';
+    if (matchHistory.length>0) {
+        var liked = matchHistory.filter(function(h){return h.liked;});
+        prompt += '匹配历史：喜欢了'+liked.length+'人，总共浏览了'+matchHistory.length+'人\n';
+        if (liked.length>0) prompt += '喜欢的人：'+liked.map(function(h){return h.name;}).join('、')+'\n';
+    }
+    if (urlAffection>0) prompt += '约会好感度：'+urlAffection+'/100，对话轮次：'+urlRounds+'轮\n';
+    if (diaryData && diaryData.note) prompt += '用户日记：'+diaryData.note+'\n';
+    if (diaryData && diaryData.discovery) prompt += '用户发现：'+diaryData.discovery+'\n';
+    prompt += '\n请分析：1.用户的社交偏好倾向 2.匹配对象的契合点 3.可改进的约会建议。直接输出分析文字，不要JSON格式。';
+
+    try {
+        var resp = await fetch(DEEPSEEK_URL, {
+            method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+DEEPSEEK_KEY},
+            body:JSON.stringify({model:'deepseek-chat',messages:[{role:'user',content:prompt}],temperature:0.7,max_tokens:500})
+        });
+        var data = await resp.json();
+        var text = data.choices[0].message.content;
+        insight.innerHTML = '<div class="ai-label">🤖 AI 深度洞察</div><div class="ai-text">'+text.replace(/\n/g,'<br>')+'</div>';
+    } catch(e) {
+        // Fallback: rule-based insight
+        var fallback = '';
+        if (myPersona && matchPersona) {
+            var myTrait = (myPersona.personality||'').split('·')[0]||'温和';
+            var matchTrait = (matchPersona.personality||'').split('·')[0]||'稳重';
+            fallback = '基于数据分析，你的「'+myTrait+'」特质与「'+(matchPersona.name||'TA')+'」的「'+matchTrait+'」风格形成了有趣的互补。';
+            if (matchHistory.filter(function(h){return h.liked;}).length>=3) fallback += '你最近表现活跃，AI建议适当放慢节奏，深度了解每位嘉宾。';
+            else fallback += '建议在约会中多分享个人故事，这能帮助对方更快了解真实的你。';
+        }
+        insight.innerHTML = '<div class="ai-label">🤖 AI 洞察（离线模式）</div><div class="ai-text">'+fallback+'</div>';
+    }
+})();
+
+console.log('📊 匹配报告·实时数据版');
+</script>
+</body>
+</html>

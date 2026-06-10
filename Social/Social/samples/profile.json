@@ -1,0 +1,14 @@
+{
+  "name": "小明",
+  "age": 28,
+  "gender": "男",
+  "occupation": "互联网产品经理",
+  "interests": ["旅游", "科技", "美食"],
+  "personality_desc": "话多、温暖、务实",
+  "preferences": {
+    "partner_age_range": "24-30",
+    "partner_occupation": "不限",
+    "partner_interests": ["旅游", "音乐"],
+    "relationship_goals": "认真谈恋爱"
+  }
+}

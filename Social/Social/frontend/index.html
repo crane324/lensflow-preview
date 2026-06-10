@@ -1,0 +1,2577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social - 虚拟AI相亲系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        :root {
+            --bg: #fdf4f4;
+            --rose: #d9b2b5;
+            --rose-light: #ecd5d7;
+            --rose-deep: #c49da1;
+            --text: #3d2c2e;
+            --accent: #c97c87;
+            --accent2: #e8a0a8;
+            --accent3: #f0c4cc;
+            --nav-bg: #ECDDC8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Noto Serif SC', 'STSong', 'SimSun', serif;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* ====== 导航栏 ====== */
+        .navbar {
+            position: fixed; top:0; left:0; right:0; z-index:100;
+            background: var(--nav-bg);
+            display:flex; align-items:center; justify-content:space-between;
+            padding:0 40px; height:56px;
+            border-bottom:1px solid rgba(0,0,0,0.04);
+            backdrop-filter:blur(8px);
+        }
+        .nav-left, .nav-center, .nav-right {
+            display:flex; align-items:center;
+        }
+        .nav-left { gap:10px; }
+        .nav-logo {
+            font-size:22px; font-weight:700;
+            background:linear-gradient(135deg,#D6336C,#FF6B9D);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            background-clip:text; text-decoration:none;
+            font-family:'Inter',-apple-system,sans-serif;
+        }
+        .nav-logo-img {
+            height:32px; width:auto;
+            object-fit:contain;
+            mix-blend-mode:multiply;
+            animation:logoReveal 0.8s ease both;
+        }
+        .nav-logo-text {
+            font-size:20px; font-weight:700;
+            background:linear-gradient(135deg,#c97c87,#e8a0a8);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            background-clip:text;
+            font-family:-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+            display:inline-block;
+        }
+        .logo-text.typewriter {
+            overflow:visible;
+            border-right:none;
+        }
+        .logo-text.typewriter .char {
+            display:inline-block; opacity:0;
+            animation:charIn 0.3s ease forwards;
+            font-size:inherit;
+            line-height:inherit;
+        }
+        @keyframes charIn {
+            from { opacity:0; transform:translateY(8px); filter:blur(4px); }
+            to { opacity:1; transform:translateY(0); filter:blur(0); }
+        }
+        @keyframes logoReveal {
+            from { opacity:0; transform:scale(0.8); }
+            to { opacity:1; transform:scale(1); }
+        }
+
+        .nav-center { gap:36px; }
+        .nav-link {
+            color:#fff; text-decoration:none; font-size:15px;
+            font-family:'Noto Serif SC', 'STSong', 'SimSun', serif;
+            font-weight:300; letter-spacing:0.04em;
+            transition:opacity 0.2s; position:relative;
+            text-shadow:0 1px 2px rgba(0,0,0,0.08);
+        }
+        .nav-link:hover { opacity:0.8; }
+        .nav-link::after {
+            content:''; position:absolute; bottom:-4px; left:50%; transform:translateX(-50%);
+            width:0; height:1.5px; background:#fff;
+            transition:width 0.3s ease;
+        }
+        .nav-link:hover::after { width:100%; }
+
+        .nav-auth {
+            padding:7px 22px; border-radius:20px;
+            border:1.5px solid rgba(255,255,255,0.6);
+            color:#fff; font-size:14px; cursor:pointer;
+            background:transparent;
+            font-family:'Noto Serif SC','STSong','SimSun',serif;
+            font-weight:300; letter-spacing:0.04em;
+            transition:all 0.25s ease;
+        }
+        .nav-auth:hover {
+            background:rgba(255,255,255,0.15);
+            border-color:#fff;
+        }
+
+        /* ====== Hero 区域（全屏） ====== */
+        .hero {
+            position:relative;
+            width:100%; height:100vh;
+            overflow:hidden;
+            background:
+                radial-gradient(ellipse at 50% 30%, rgba(201,124,135,0.10) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(232,168,176,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(240,196,204,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 70%, rgba(217,178,181,0.12) 0%, transparent 40%);
+            background-color:#fdf4f4;
+        }
+
+        /* 爱心光波粒子 */
+        .ambient-particles {
+            position:absolute; inset:0; z-index:0; pointer-events:none;
+        }
+        .particle {
+            position:absolute; border-radius:50%;
+            background:var(--accent); opacity:0;
+            animation:floatUp 6s infinite;
+        }
+        .heart-particle {
+            position:absolute; opacity:0; pointer-events:none;
+            animation:heartFloat 5s infinite; filter:blur(1px);
+        }
+        @keyframes floatUp {
+            0%{transform:translateY(0) scale(0);opacity:0;}
+            20%{opacity:0.6;} 80%{opacity:0.1;}
+            100%{transform:translateY(-100vh) scale(1.5);opacity:0;}
+        }
+        @keyframes heartFloat {
+            0%{transform:translateY(0) scale(0.3) rotate(0deg);opacity:0;}
+            15%{opacity:0.7;}
+            50%{opacity:0.5;transform:translateY(-40vh) scale(1.2) rotate(15deg);}
+            85%{opacity:0.15;}
+            100%{transform:translateY(-85vh) scale(0.6) rotate(-10deg);opacity:0;}
+        }
+
+        /* 3D轨道舞台 */
+        .orbit-stage {
+            position:absolute;
+            top:50%; left:45%;
+            transform:translate(-50%,-50%);
+            width:1100px; height:800px;
+            perspective:1000px;
+            perspective-origin:50% 50%;
+            z-index:1; pointer-events:none;
+        }
+        .orbit-ring {
+            position:absolute; top:50%; left:50%;
+            transform-style:preserve-3d;
+            width:0; height:0;
+        }
+        .orbit-decor {
+            position:absolute; top:50%; left:50%;
+            transform:translate(-50%,-50%) rotateX(65deg);
+            width:1040px; height:520px;
+            border:1px dashed rgba(201,124,135,0.10);
+            border-radius:50%; z-index:0; pointer-events:none;
+        }
+        .orbit-decor-2 {
+            width:1100px; height:550px;
+            border-color:rgba(232,168,176,0.08);
+            animation:decorPulse 8s ease-in-out infinite;
+        }
+        @keyframes decorPulse {
+            0%,100%{border-color:rgba(232,168,176,0.06);}
+            50%{border-color:rgba(232,168,176,0.14);}
+        }
+
+        /* 场景卡片 */
+        .scene-card {
+            position:absolute; width:180px; height:135px;
+            border-radius:18px; overflow:hidden; background:#fff;
+            box-shadow:0 8px 32px rgba(0,0,0,0.06),0 2px 8px rgba(0,0,0,0.04);
+            transition:all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+            cursor:default; pointer-events:auto;
+            backface-visibility:hidden; will-change:transform;
+        }
+        .scene-card img { width:100%; height:100%; object-fit:cover; display:block; }
+        .scene-card:hover {
+            box-shadow:0 20px 60px rgba(201,124,135,0.20),0 4px 16px rgba(0,0,0,0.06);
+        }
+        .scene-card::after {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(135deg,rgba(255,255,255,0.3) 0%,transparent 60%);
+            border-radius:18px; pointer-events:none;
+        }
+        .mini-figure {
+            position:absolute; pointer-events:none;
+            filter:drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+            animation:figureBounce 2s ease-in-out infinite; z-index:2;
+        }
+        @keyframes figureBounce {
+            0%,100%{transform:translateY(0);}
+            50%{transform:translateY(-4px);}
+        }
+
+        /* 中心入口 */
+        .center-hub {
+            position:absolute; top:50%; left:50%;
+            transform:translate(-50%,-50%);
+            z-index:10; text-align:center; pointer-events:auto;
+        }
+        .center-hub-inner {
+            background:rgba(255,250,250,0.88);
+            backdrop-filter:blur(28px);
+            -webkit-backdrop-filter:blur(28px);
+            border-radius:32px; padding:40px 56px;
+            box-shadow:0 0 0 1px rgba(201,124,135,0.10),
+                       0 16px 64px rgba(201,124,135,0.12),
+                       0 4px 16px rgba(0,0,0,0.03);
+        }
+        .logo-text {
+            font-size:52px; font-weight:800; letter-spacing:-0.03em;
+            background:linear-gradient(135deg,#c97c87 0%,#e8a0a8 35%,#d4a0a8 70%,#f0c4cc 100%);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            background-clip:text; line-height:1.1;
+            font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;
+        }
+        .tagline {
+            font-size:15px; color:#a89497; margin-top:8px;
+            font-weight:400; letter-spacing:0.05em;
+            font-family:'Noto Serif SC','STSong','SimSun',serif;
+        }
+        .enter-btn {
+            display:inline-flex; align-items:center; gap:8px;
+            margin-top:28px; padding:14px 40px; border-radius:50px;
+            background:linear-gradient(135deg,#c97c87,#e8a0a8);
+            color:#fff; font-size:16px; font-weight:600;
+            letter-spacing:0.02em; border:none; cursor:pointer;
+            box-shadow:0 8px 32px rgba(201,124,135,0.30);
+            transition:all 0.3s ease; text-decoration:none;
+        }
+        .enter-btn:hover {
+            transform:translateY(-2px);
+            box-shadow:0 16px 48px rgba(201,124,135,0.40);
+        }
+        .enter-btn .arrow { transition:transform 0.3s ease; }
+        .enter-btn:hover .arrow { transform:translateX(4px); }
+
+        /* 向下滚动提示 */
+        .scroll-hint {
+            position:absolute; bottom:32px; left:50%;
+            transform:translateX(-50%);
+            z-index:10; text-align:center;
+            color:#c4aeb0; font-size:13px;
+            animation:scrollBounce 2s ease-in-out infinite;
+            pointer-events:none;
+        }
+        .scroll-hint .arrow-down {
+            display:block; font-size:20px; margin-top:4px;
+        }
+        @keyframes scrollBounce {
+            0%,100%{transform:translateX(-50%) translateY(0);opacity:0.5;}
+            50%{transform:translateX(-50%) translateY(8px);opacity:1;}
+        }
+
+        /* ====== 下方内容区 ====== */
+        .content-section {
+            position:relative; z-index:2;
+            background:var(--bg);
+            padding:60px 0 0;
+        }
+
+        /* 主模块区容器 */
+        .main-modules {
+            max-width:1200px; margin:0 auto; padding:0 60px;
+            position:relative;
+        }
+
+        /* 像素风主模块 */
+        .pixel-card {
+            width:360px; min-height:280px;
+            background:linear-gradient(180deg, #FFE4EC 0%, #FFF5F7 100%);
+            border:3px solid #FF6B9D;
+            border-radius:0;
+            padding:28px 24px;
+            position:relative;
+            transition:transform 0.2s ease;
+            box-shadow:
+                4px 4px 0px rgba(214,51,108,0.15),
+                inset 0 0 0 1px rgba(255,107,157,0.1);
+        }
+        .pixel-card:hover { transform:translate(-2px, -2px); }
+
+        /* 像素锯齿边框装饰 */
+        .pixel-card::before {
+            content:'';
+            position:absolute; top:-8px; left:20px;
+            width:calc(100% - 40px); height:8px;
+            background:repeating-linear-gradient(90deg,
+                #FF6B9D 0px, #FF6B9D 6px,
+                transparent 6px, transparent 12px);
+        }
+        .pixel-card::after {
+            content:'';
+            position:absolute; bottom:-8px; left:20px;
+            width:calc(100% - 40px); height:8px;
+            background:repeating-linear-gradient(90deg,
+                #FF6B9D 0px, #FF6B9D 6px,
+                transparent 6px, transparent 12px);
+        }
+
+        .pixel-card-title {
+            font-family:'Press Start 2P', cursive, monospace;
+            font-size:14px; color:#D6336C;
+            letter-spacing:0.02em; line-height:1.6;
+            margin-bottom:16px;
+            position:relative;
+            display:flex; align-items:center; gap:10px;
+        }
+        .pixel-icon {
+            display:inline-block; width:16px; height:16px;
+            image-rendering:pixelated;
+        }
+        .pixel-card-desc {
+            font-family:'Inter','SF Pro Display',-apple-system,sans-serif;
+            font-size:14px; color:#4A1C2E; line-height:1.7;
+        }
+        .pixel-card-features {
+            list-style:none; margin-top:14px;
+            font-family:'Inter','SF Pro Display',-apple-system,sans-serif;
+            font-size:12px; color:#6B3A4A; line-height:2;
+        }
+        .pixel-card-features li::before {
+            content:'▸ '; color:#FF6B9D; font-size:10px;
+        }
+        .pixel-btn {
+            display:inline-block; margin-top:16px;
+            padding:8px 24px;
+            background:#FF6B9D; color:#fff;
+            border:2px solid #D6336C;
+            font-family:'Inter',-apple-system,sans-serif;
+            font-size:13px; font-weight:600;
+            cursor:pointer; text-decoration:none;
+            transition:background 0.2s;
+            border-radius:0;
+        }
+        .pixel-btn:hover { background:#FF8FB3; }
+
+        /* 像素爱心装饰 */
+        .pixel-heart {
+            position:absolute; width:16px; height:16px;
+            image-rendering:pixelated;
+        }
+
+        /* ===== 放映室（心动试炼场） ===== */
+        .screening-room {
+            display:flex; gap:16px; width:100%;
+            background:rgba(255,255,255,0.15);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            border:1px solid rgba(255,255,255,0.3);
+            border-radius:20px;
+            padding:24px 20px;
+            box-shadow:0 8px 32px rgba(233,30,99,0.04);
+            position:relative; overflow:hidden;
+            flex-wrap:wrap;
+        }
+        .sr-canvas {
+            position:absolute; inset:0; z-index:0;
+            pointer-events:none;
+        }
+        .sr-column {
+            flex:1; min-width:0;
+            padding:0 14px; position:relative; z-index:1;
+            border-right:1px solid rgba(201,124,135,0.1);
+        }
+        .sr-column:last-child { border-right:none; }
+        .sr-col-title {
+            font-family:'Inter',-apple-system,sans-serif;
+            font-size:14px; font-weight:700; color:#D6336C;
+            margin-bottom:12px; display:flex; align-items:center; gap:6px;
+            backdrop-filter:blur(4px);
+            -webkit-backdrop-filter:blur(4px);
+        }
+
+        /* 放映室大标题 */
+        .sr-main-title {
+            font-family:'Inter',-apple-system,sans-serif;
+            font-size:18px; font-weight:700; color:#2D1B2E;
+            margin-bottom:16px; display:flex; align-items:center; gap:8px;
+        }
+        .sr-main-icon {
+            width:40px; height:40px; border-radius:12px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:22px;
+            background:linear-gradient(135deg, rgba(255,107,157,0.15), rgba(214,51,108,0.1));
+            border:1px solid rgba(255,107,157,0.2);
+        }
+
+        /* 本月精选大卡 */
+        .sr-featured {
+            width:100%; height:200px; border-radius:20px;
+            position:relative; overflow:hidden; cursor:pointer;
+            margin-bottom:20px;
+            box-shadow:0 8px 32px rgba(233,30,99,0.08);
+            transition:transform 0.3s, box-shadow 0.3s;
+        }
+        .sr-featured:hover { transform:translateY(-2px); box-shadow:0 16px 40px rgba(233,30,99,0.14); }
+        .sr-featured-slide {
+            position:absolute; inset:0; opacity:0; transition:opacity 0.6s ease-in-out;
+            background-size:cover; background-position:center;
+        }
+        .sr-featured-slide.active { opacity:1; }
+        .sr-featured-slide::before {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.55) 100%);
+        }
+
+        /* 轮播箭头 */
+        .sr-arrow {
+            position:absolute; top:50%; transform:translateY(-50%); z-index:5;
+            width:36px; height:36px; border-radius:50%;
+            background:rgba(255,255,255,0.3); backdrop-filter:blur(6px);
+            -webkit-backdrop-filter:blur(6px);
+            border:1px solid rgba(255,255,255,0.5);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; font-size:14px; color:#fff;
+            transition:all 0.2s; opacity:0; pointer-events:none;
+        }
+        .sr-featured:hover .sr-arrow { opacity:1; pointer-events:auto; }
+        .sr-arrow:hover { background:rgba(255,255,255,0.5); }
+        .sr-arrow.left { left:12px; }
+        .sr-arrow.right { right:12px; }
+
+        /* 轮播指示点 */
+        .sr-dots {
+            position:absolute; bottom:60px; left:50%; transform:translateX(-50%);
+            display:flex; gap:8px; z-index:5;
+        }
+        .sr-dot {
+            width:8px; height:8px; border-radius:50%;
+            background:rgba(255,255,255,0.4); cursor:pointer;
+            transition:all 0.3s;
+        }
+        .sr-dot.active { background:#fff; transform:scale(1.3); }
+        /* 星星点缀 */
+        .sr-stars {
+            position:absolute; inset:0; pointer-events:none;
+        }
+        .sr-star {
+            position:absolute; border-radius:50%; background:#fff;
+            animation:starTwinkle 2s ease-in-out infinite;
+        }
+        @keyframes starTwinkle {
+            0%,100%{opacity:0.3; transform:scale(1);}
+            50%{opacity:1; transform:scale(1.5);}
+        }
+        .sr-featured-content {
+            position:absolute; bottom:0; left:0; right:0;
+            padding:24px 28px; z-index:2;
+        }
+        .sr-featured-tag {
+            display:inline-block; padding:3px 10px; border-radius:12px;
+            background:rgba(255,255,255,0.2); color:#fff;
+            font-size:11px; font-weight:600; backdrop-filter:blur(4px);
+            margin-bottom:8px;
+        }
+        .sr-featured-title {
+            font-size:26px; font-weight:700; color:#fff;
+            font-family:'Inter','PingFang SC',sans-serif;
+        }
+        .sr-featured-sub {
+            font-size:14px; color:rgba(255,255,255,0.8); margin-top:4px;
+            font-family:'Inter','PingFang SC',sans-serif;
+        }
+        .sr-item {
+            font-size:13px; color:var(--text); padding:6px 0;
+            border-bottom:1px solid rgba(201,124,135,0.04); cursor:pointer;
+            transition:color 0.2s; font-family:'Inter',-apple-system,sans-serif;
+        }
+        .sr-item:last-child { border-bottom:none; }
+        .sr-item:hover { color:#D6336C; }
+        .sr-item .hot { font-size:10px; color:#FF6B9D; margin-left:4px; font-weight:600; }
+        .sr-tag-cloud { display:flex; flex-wrap:wrap; gap:6px; }
+        .sr-tag {
+            padding:4px 10px; border-radius:12px;
+            font-size:11px; font-weight:500;
+            background:rgba(255,107,157,0.06);
+            border:1px solid rgba(255,107,157,0.1);
+            color:#D6336C; cursor:pointer;
+            transition:all 0.2s; font-family:'Inter',-apple-system,sans-serif;
+        }
+        .sr-tag:hover { background:rgba(255,107,157,0.12); border-color:#FF6B9D; }
+
+        /* Z字形布局 */
+        .z-row {
+            display:flex; align-items:flex-start;
+            margin-bottom:80px;
+        }
+        .z-row.row-1 { justify-content:center; }
+        .z-row.row-2 { justify-content:center; }
+        .z-row.row-3 { justify-content:center; gap:20px; }
+
+        /* 匹配报告卡片 */
+        .report-card {
+            width:580px; background:rgba(255,255,255,0.55);
+            backdrop-filter:blur(10px);
+            -webkit-backdrop-filter:blur(10px);
+            border:1px solid rgba(255,100,150,0.1);
+            border-radius:16px; padding:24px;
+            box-shadow:0 0 15px rgba(255,100,150,0.04), 0 4px 14px rgba(0,0,0,0.03);
+        }
+        .report-card-title {
+            font-family:'Inter',-apple-system,sans-serif;
+            font-size:18px; font-weight:700; color:#2D1B2E;
+            margin-bottom:16px; display:flex; align-items:center; gap:8px;
+            border-bottom:2px solid #D6336C; padding-bottom:12px;
+        }
+        .report-content { font-size:14px; color:var(--text); line-height:1.8; }
+        .report-score { font-size:48px; font-weight:800; color:#D6336C; text-align:center; }
+        .report-score-label { font-size:13px; color:#a89497; text-align:center; }
+
+        /* 心动备忘录 */
+        .diary-card {
+            width:320px; background:rgba(255,255,255,0.5);
+            backdrop-filter:blur(10px);
+            -webkit-backdrop-filter:blur(10px);
+            border:1px solid rgba(255,100,150,0.1);
+            border-radius:16px; padding:20px;
+            box-shadow:0 0 15px rgba(255,100,150,0.04);
+            position:relative;
+            background-image:repeating-linear-gradient(
+                0deg, transparent, transparent 27px, rgba(201,124,135,0.06) 28px
+            );
+        }
+        .diary-header {
+            font-family:'Inter',-apple-system,sans-serif;
+            font-size:16px; font-weight:700; color:#2D1B2E;
+            margin-bottom:14px; padding-bottom:10px;
+            border-bottom:1px solid rgba(201,124,135,0.1);
+        }
+        .diary-lines { position:relative; z-index:1; }
+        .diary-section { margin-bottom:14px; }
+        .diary-label {
+            font-size:11px; font-weight:700; color:#D6336C;
+            margin-bottom:4px; text-transform:uppercase; letter-spacing:0.04em;
+        }
+        .diary-text {
+            font-size:12px; color:#5a3a46; line-height:1.7;
+            font-family:'Inter','PingFang SC',sans-serif;
+        }
+        .diary-text[contenteditable]:empty:before {
+            content:attr(placeholder); color:#c0b0b5; font-style:italic;
+        }
+        .diary-text[contenteditable] {
+            outline:none; padding:4px 6px; border-radius:6px;
+            border:1px solid transparent; transition:border-color 0.2s;
+            min-height:28px;
+        }
+        .diary-text[contenteditable]:focus {
+            border-color:rgba(201,124,135,0.15); background:rgba(255,255,255,0.6);
+        }
+        .diary-keywords { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; padding-top:12px; border-top:1px solid rgba(201,124,135,0.06); }
+        .dk-tag {
+            padding:3px 10px; border-radius:12px; font-size:11px;
+            background:rgba(255,107,157,0.06); color:#D6336C;
+            font-family:'Inter',sans-serif;
+        }
+        .diary-add-btn {
+            margin-top:12px; padding:6px 14px; border-radius:14px;
+            border:1px dashed rgba(201,124,135,0.2); background:transparent;
+            color:#c0aeb0; font-size:12px; cursor:pointer; font-family:inherit;
+        }
+        .diary-add-btn:hover { border-color:#D6336C; color:#D6336C; }
+
+        @media (max-width:960px) {
+            .z-row.row-3 { flex-direction:column; align-items:center; }
+            .report-card, .diary-card { width:100%; max-width:580px; }
+        }
+
+        /* ===== 心动信号站 - 双卡布局 ===== */
+        .signal-station {
+            width:900px; min-height:360px;
+            background:linear-gradient(180deg, rgba(255,192,203,0.12) 0%, rgba(252,228,236,0.18) 100%);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            border:1px solid rgba(255,255,255,0.3);
+            border-radius:20px;
+            padding:20px 18px;
+            box-shadow:0 8px 32px rgba(233,30,99,0.06);
+            display:flex; flex-direction:row; align-items:stretch;
+            position:relative; overflow:visible;
+        }
+        .signal-particles {
+            position:absolute; inset:-20px; pointer-events:none; z-index:0;
+            overflow:hidden; border-radius:30px;
+        }
+
+        /* 左右布局 */
+        .signal-left { flex:0 0 460px; display:flex; flex-direction:column; position:relative; z-index:2; }
+        .signal-beam {
+            width:2px; margin:0 14px; flex-shrink:0; position:relative; z-index:2;
+            background:linear-gradient(180deg,
+                transparent 0%, rgba(255,107,157,0.5) 20%,
+                rgba(255,107,157,0.7) 50%, rgba(255,107,157,0.5) 80%,
+                transparent 100%);
+            animation:beamFlow 2s ease-in-out infinite;
+            border-radius:1px;
+        }
+        @keyframes beamFlow {
+            0%,100%{opacity:0.4;}
+            50%{opacity:0.9;}
+        }
+        .signal-right { flex:1; position:relative; z-index:2; display:flex; align-items:center; }
+
+        /* 复古像素窗口 */
+        .archive-window {
+            width:100%; background:rgba(255,255,255,0.85);
+            border:2px solid #c497a8;
+            border-radius:4px;
+            box-shadow:inset 0 0 0 2px rgba(255,255,255,0.8), 0 4px 16px rgba(0,0,0,0.05);
+            overflow:hidden;
+            image-rendering:pixelated;
+        }
+        .archive-titlebar {
+            display:flex; align-items:center; gap:6px;
+            padding:8px 10px;
+            background:linear-gradient(180deg, #f0d8e0 0%, #e8c8d4 100%);
+            border-bottom:2px solid #c497a8;
+            font-family:'Press Start 2P', cursive, monospace;
+            font-size:8px; color:#5a3a46;
+        }
+        .archive-dot {
+            width:8px; height:8px; border-radius:50%;
+            border:1px solid #b88090;
+        }
+        .archive-dot:nth-child(1){background:#e8a0b0;}
+        .archive-dot:nth-child(2){background:#d4b0c0;}
+        .archive-dot:nth-child(3){background:#c0c8d0;}
+        .archive-title-text { flex:1; text-align:center; }
+        .archive-body {
+            padding:16px; min-height:200px; max-height:360px; overflow-y:auto;
+            font-family:'Inter','PingFang SC',sans-serif;
+        }
+        .archive-idle {
+            text-align:center; color:#c0b0b5; padding:40px 0;
+            font-size:13px; line-height:1.8;
+        }
+        .archive-idle-icon { display:block; font-size:40px; margin-bottom:8px; opacity:0.5; }
+
+        /* 档案条目 */
+        .archive-section {
+            margin-bottom:14px; opacity:0; transform:translateY(6px);
+            animation:archiveReveal 0.4s ease forwards;
+        }
+        @keyframes archiveReveal {
+            to { opacity:1; transform:translateY(0); }
+        }
+        .archive-section-title {
+            font-size:10px; font-weight:700; color:#D6336C;
+            text-transform:uppercase; letter-spacing:0.06em;
+            margin-bottom:4px;
+            font-family:'Inter',sans-serif;
+        }
+        .archive-section-content {
+            font-size:13px; color:#3d2c2e; line-height:1.6;
+        }
+        /* 打字光标 */
+        .type-cursor::after {
+            content:'▌'; color:#D6336C; animation:cursorBlink 0.8s step-end infinite;
+        }
+        @keyframes cursorBlink {
+            0%,100%{opacity:1;} 50%{opacity:0;}
+        }
+        /* 堆叠翻页 */
+        .archive-flip {
+            animation:archiveFlip 0.4s ease-in-out;
+        }
+        @keyframes archiveFlip {
+            0%{transform:rotateY(0);opacity:1;}
+            50%{transform:rotateY(15deg);opacity:0.5;}
+            100%{transform:rotateY(0);opacity:1;}
+        }
+        .archive-actions {
+            display:flex; gap:8px; margin-top:14px; padding-top:12px;
+            border-top:1px solid rgba(201,124,135,0.1);
+        }
+        .archive-btn {
+            padding:6px 16px; border-radius:4px; font-size:12px;
+            font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;
+            border:2px solid #c497a8; transition:all 0.2s;
+        }
+        .archive-btn.skip {
+            background:transparent; color:#a89497;
+        }
+        .archive-btn.skip:hover { background:#f5f0f1; }
+        .archive-btn.like {
+            background:#FF6B9D; color:#fff; border-color:#D6336C;
+        }
+        .archive-btn.like:hover { background:#D6336C; }
+        .signal-station::before {
+            content:''; position:absolute; top:-40px; right:-40px;
+            width:120px; height:120px; border-radius:50%;
+            background:radial-gradient(circle, rgba(255,107,157,0.06), transparent);
+        }
+        .signal-title {
+            font-size:15px; font-weight:700; color:#D6336C;
+            margin-bottom:14px; display:flex; align-items:center; gap:6px;
+            font-family:'Inter',sans-serif;
+        }
+
+        /* 双卡容器 */
+        .dual-cards {
+            display:flex; align-items:center; gap:0;
+            flex:1; position:relative;
+        }
+        /* 单张卡片 */
+        .side-card {
+            flex:1; min-width:0;
+            background:rgba(255,255,255,0.55);
+            backdrop-filter:blur(10px);
+            -webkit-backdrop-filter:blur(10px);
+            border-radius:14px;
+            padding:14px 10px;
+            box-shadow:0 0 15px rgba(255,100,150,0.06), 0 4px 14px rgba(0,0,0,0.03);
+            text-align:center;
+            display:flex; flex-direction:column;
+            align-items:center;
+            position:relative;
+            transition:all 0.3s ease;
+            animation:cardBreath 4s ease-in-out infinite;
+            border:1px solid rgba(255,100,150,0.1);
+        }
+        .card-stack-layer:nth-child(2) { animation-delay:0.5s; }
+        .card-stack-layer:nth-child(3) { animation-delay:1s; }
+        @keyframes cardBreath {
+            0%,100%{transform:translateY(0);}
+            50%{transform:translateY(-3px);}
+        }
+        .side-card.match-card {
+            transition:all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+        }
+        .side-card.card-stack-layer.swiping-left {
+            transform:translateX(60px) rotate(-6deg); opacity:0;
+        }
+
+        /* 左卡：我的分身 */
+        .sc-label {
+            font-size:10px; font-weight:600; color:#c0b0b5;
+            text-transform:uppercase; letter-spacing:0.06em;
+            margin-bottom:8px;
+        }
+        .sc-avatar {
+            width:52px; height:52px; border-radius:50%;
+            margin:0 auto 8px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:24px;
+            background:linear-gradient(135deg,#FFE4EC,#FF6B9D);
+            overflow:hidden; position:relative; z-index:2;
+            box-shadow:0 0 0 4px rgba(255,107,157,0.15), 0 0 20px rgba(255,107,157,0.1);
+        }
+        /* 全息光环 */
+        .sc-avatar::before {
+            content:''; position:absolute; inset:-6px; border-radius:50%;
+            border:2px solid rgba(255,107,157,0.25);
+            border-top-color:rgba(255,107,157,0.5);
+            animation:hologramSpin 3s linear infinite;
+            z-index:-1;
+        }
+        @keyframes hologramSpin {
+            from{transform:rotate(0deg);}
+            to{transform:rotate(360deg);}
+        }
+        .sc-avatar img { width:100%; height:100%; object-fit:cover; }
+        .sc-avatar.pixelated img { image-rendering:pixelated; }
+        .sc-name-row {
+            font-size:12px; font-weight:600; color:#2D1B2E;
+            margin-bottom:8px;
+        }
+        /* 灵魂标签 */
+        .sc-tags {
+            display:flex; flex-wrap:wrap; gap:4px; justify-content:center;
+            margin-bottom:8px;
+        }
+        .sc-tag {
+            padding:3px 8px; border-radius:4px;
+            font-size:10px; font-weight:500;
+            border:1px solid rgba(255,107,157,0.15);
+            position:relative;
+        }
+        .sc-tag::after {
+            content:''; position:absolute; bottom:0; left:20%; right:20%;
+            height:1px;
+            background:linear-gradient(90deg, transparent, rgba(255,107,157,0.3), transparent);
+        }
+        .sc-tag.pink { background:rgba(255,107,157,0.08); color:#D6336C; }
+        .sc-tag.purple { background:rgba(180,140,220,0.1); color:#8b6bb0; }
+        .sc-tag.blue { background:rgba(130,170,227,0.1); color:#5b8cc9; }
+        .sc-tag.mint { background:rgba(130,210,180,0.1); color:#5b9e82; }
+        .sc-tag.peach { background:rgba(255,180,150,0.1); color:#c97c6b; }
+        .sc-declaration {
+            font-size:11px; color:#c97c87; font-style:italic;
+            margin-top:4px; max-width:100%; overflow:hidden;
+            text-overflow:ellipsis; white-space:nowrap;
+        }
+        .sc-edit-btn {
+            margin-top:8px; padding:4px 12px; border-radius:14px;
+            border:1px dashed rgba(201,124,135,0.2); background:transparent;
+            color:#c0aeb0; font-size:10px; cursor:pointer;
+            font-family:inherit; transition:all 0.2s;
+        }
+        .sc-edit-btn:hover { border-color:#D6336C; color:#D6336C; }
+
+        /* 右卡：匹配对象 */
+        .sc-bio { font-size:11px; color:#a89497; font-style:italic; margin-bottom:8px; }
+
+        /* 中间爱心连接器 */
+        .dual-heart {
+            flex-shrink:0; width:28px; text-align:center;
+            font-size:18px; z-index:5;
+            filter:drop-shadow(0 0 6px rgba(255,107,157,0.2));
+            animation:dualHeartFloat 2s ease-in-out infinite;
+            position:relative;
+        }
+        /* 流动光带 */
+        .dual-heart::before {
+            content:''; position:absolute; top:50%; left:-60px; right:-60px;
+            height:1px;
+            background:linear-gradient(90deg,
+                transparent 0%, rgba(255,107,157,0.4) 30%,
+                rgba(255,107,157,0.6) 50%,
+                rgba(255,107,157,0.4) 70%, transparent 100%);
+            animation:flowBeam 2s ease-in-out infinite;
+        }
+        .dual-heart.pulse::before { animation:flowBeamPulse 0.6s ease-in-out 3; }
+        @keyframes flowBeam {
+            0%,100%{opacity:0.3;transform:translateY(-50%) scaleX(0.8);}
+            50%{opacity:0.7;transform:translateY(-50%) scaleX(1);}
+        }
+        @keyframes flowBeamPulse {
+            0%,100%{opacity:0.3;transform:translateY(-50%) scaleX(0.8);}
+            50%{opacity:1;transform:translateY(-50%) scaleX(1.2);}
+        }
+
+        /* 开始匹配像素文字（覆盖在卡片上） */
+        .start-match-text {
+            font-family:'Press Start 2P', cursive, monospace;
+            font-size:13px; color:#D6336C; cursor:pointer;
+            text-align:center; z-index:20; position:absolute;
+            top:50%; left:50%; transform:translate(-50%,-50%);
+            animation:startBlink 1.5s ease-in-out infinite;
+            transition:all 0.2s; pointer-events:auto;
+            background:rgba(255,255,255,0.7); padding:8px 14px;
+            border-radius:8px; white-space:nowrap;
+        }
+        .start-match-text:hover {
+            color:#FF6B9D;
+            text-shadow:0 0 8px rgba(255,107,157,0.3);
+        }
+        @keyframes startBlink {
+            0%,100%{opacity:0.6;}
+            50%{opacity:1;}
+        }
+        .start-match-text.matched { display:none; }
+
+        /* 匹配卡片初始状态：右移+模糊 */
+        .card-stack {
+            position:relative; flex:1; min-width:0;
+            transition:transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94);
+        }
+        .card-stack.blurred {
+            transform:translateX(80px);
+        }
+        .card-stack.blurred .card-stack-layer:nth-child(1) {
+            filter:blur(8px);
+            pointer-events:none;
+        }
+        .card-stack.blurred .card-stack-layer:nth-child(2),
+        .card-stack.blurred .card-stack-layer:nth-child(3) {
+            filter:blur(10px);
+            pointer-events:none;
+        }
+        .card-stack.revealing {
+            transform:translateX(0);
+        }
+        .card-stack.revealing .card-stack-layer {
+            filter:blur(0);
+            transition:filter 0.9s cubic-bezier(0.25,0.46,0.45,0.94);
+        }
+        @keyframes dualHeartFloat {
+            0%,100%{transform:translateY(0) scale(1);}
+            50%{transform:translateY(-4px) scale(1.15);}
+        }
+
+        /* 匹配操作 */
+        .sc-actions {
+            display:flex; gap:8px; margin-top:8px; justify-content:center;
+        }
+        .sc-act-btn {
+            width:32px; height:32px; border-radius:50%;
+            border:none; cursor:pointer; font-size:13px;
+            display:flex; align-items:center; justify-content:center;
+            transition:all 0.2s; background:#fff;
+            box-shadow:0 2px 8px rgba(0,0,0,0.06);
+        }
+        .sc-act-btn.like { color:#FF6B9D; border:1px solid rgba(255,107,157,0.2); }
+        .sc-act-btn.like:hover { background:#FF6B9D; color:#fff; transform:scale(1.15); }
+        .sc-act-btn.nope { color:#999; border:1px solid rgba(0,0,0,0.08); }
+        .sc-act-btn.nope:hover { background:#666; color:#fff; transform:scale(1.15); }
+
+        /* 卡片堆叠效果 */
+        .card-stack { position:relative; flex:1; min-width:0; }
+        .card-stack-layer {
+            position:absolute; top:0; left:0; right:0;
+            border-radius:14px;
+            transition:all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+        }
+        .card-stack-layer:nth-child(1) { z-index:10; position:relative; }
+        .card-stack-layer:nth-child(2) { z-index:9; transform:translateY(10px) scale(0.96); opacity:0.6; }
+        .card-stack-layer:nth-child(3) { z-index:8; transform:translateY(20px) scale(0.92); opacity:0.3; }
+
+        .mp-history-btn { margin-top:14px; text-align:center; }
+        .mp-history-link {
+            font-size:11px; color:#c4aeb0; cursor:pointer;
+            background:none; border:none; font-family:inherit;
+            text-decoration:underline; text-underline-offset:3px;
+        }
+        .mp-history-link:hover { color:#D6336C; }
+
+        /* 空态 */
+        .sc-empty { color:#c4aeb0; font-size:12px; padding:30px 0; }
+
+        /* 匹配成功overlay */
+        .match-overlay {
+            position:fixed; inset:0; z-index:200;
+            background:rgba(253,244,244,0.92);
+            backdrop-filter:blur(8px);
+            display:flex; align-items:center; justify-content:center;
+            opacity:0; pointer-events:none; transition:opacity 0.4s;
+        }
+        .match-overlay.active { opacity:1; pointer-events:auto; }
+        .match-overlay canvas {
+            position:absolute; inset:0; z-index:0;
+        }
+        .match-overlay-content { text-align:center; position:relative; z-index:1; }
+        .match-overlay-emoji { font-size:80px; animation:matchPop 0.5s cubic-bezier(0.68,-0.55,0.27,1.55); }
+        @keyframes matchPop {
+            0%{transform:scale(0) rotate(-30deg);}
+            60%{transform:scale(1.2) rotate(5deg);}
+            100%{transform:scale(1) rotate(0);}
+        }
+        .match-overlay-text { font-size:24px; font-weight:700; color:#D6336C; margin:12px 0; }
+        .match-overlay-sub { font-size:14px; color:#a89497; margin-bottom:18px; }
+        .match-overlay-btn {
+            padding:12px 32px; border-radius:25px;
+            background:linear-gradient(135deg,#FF6B9D,#D6336C);
+            color:#fff; font-size:15px; font-weight:600;
+            border:none; cursor:pointer;
+            box-shadow:0 4px 16px rgba(255,107,157,0.3);
+        }
+        .match-overlay-btn:hover { transform:translateY(-2px); }
+
+        /* 匹配加载 */
+        .match-loading { text-align:center; }
+        .match-loading-hearts { font-size:50px; animation:heartLoad 1.2s ease-in-out infinite; }
+        @keyframes heartLoad { 0%{transform:scale(0.6);opacity:0.4;} 50%{transform:scale(1.2);opacity:1;} 100%{transform:scale(0.6);opacity:0.4;} }
+        .match-loading-text { font-size:16px; color:#D6336C; margin-top:10px; font-weight:600; }
+
+        /* 登录模态框 */
+        .login-modal {
+            background:rgba(255,255,255,0.92);
+            backdrop-filter:blur(24px);
+            -webkit-backdrop-filter:blur(24px);
+            border:1px solid rgba(255,255,255,0.5);
+            border-radius:20px; width:min(400px,90vw);
+            padding:32px 28px;
+            box-shadow:0 16px 48px rgba(201,124,135,0.12);
+        }
+        .login-tabs { display:flex; gap:0; margin-bottom:24px; border-bottom:1px solid var(--border); }
+        .login-tab {
+            flex:1; padding:10px 0; text-align:center;
+            font-size:14px; font-weight:600; cursor:pointer;
+            color:#c0b0b5; border-bottom:2px solid transparent;
+            transition:all 0.2s; background:none; border-top:none; border-left:none; border-right:none;
+            font-family:inherit;
+        }
+        .login-tab.active { color:#D6336C; border-bottom-color:#D6336C; }
+        .login-input {
+            width:100%; padding:12px 16px; border:1px solid var(--border);
+            border-radius:12px; font-size:14px; font-family:inherit; outline:none;
+            margin-bottom:12px; transition:border-color 0.2s;
+        }
+        .login-input:focus { border-color:#FF6B9D; }
+        .login-code-row { display:flex; gap:10px; }
+        .login-code-row .login-input { flex:1; }
+        .login-code-btn {
+            padding:12px 16px; border-radius:12px; border:1.5px solid #D6336C;
+            background:transparent; color:#D6336C; font-size:13px; font-weight:500;
+            cursor:pointer; white-space:nowrap; font-family:inherit;
+        }
+        .login-code-btn:hover { background:#FFF5F7; }
+        .login-submit {
+            width:100%; padding:12px; border-radius:25px; border:none;
+            background:linear-gradient(135deg,#FF6B9D,#D6336C);
+            color:#fff; font-size:15px; font-weight:600; cursor:pointer;
+            margin-top:16px; font-family:inherit;
+        }
+        .login-submit:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(255,107,157,0.3); }
+
+        @media (max-width:768px) {
+            .signal-station { width:100%; max-width:380px; flex-direction:column; }
+            .signal-beam { width:100%; height:2px; margin:8px 0; }
+            .signal-right { width:100%; }
+            .dual-cards { flex-direction:column; gap:8px; }
+            .dual-heart { transform:rotate(90deg); }
+            .screening-room { flex-direction:column; gap:14px; }
+            .sr-column { border-right:none; border-bottom:1px solid rgba(201,124,135,0.08); padding:0 0 14px 0; }
+            .sr-column:last-child { border-bottom:none; padding-bottom:0; }
+        }
+
+        /* ====== 次模块区（毛玻璃） ====== */
+        .sub-modules-wrap {
+            margin-top:0; padding:20px 40px 40px;
+            background:linear-gradient(180deg,
+                rgba(255,228,236,0.3) 0%,
+                rgba(253,244,244,0.8) 50%,
+                rgba(253,244,244,1) 100%);
+        }
+        .sub-modules {
+            max-width:1100px; margin:0 auto;
+            display:flex; justify-content:center; gap:40px;
+            flex-wrap:wrap;
+        }
+        .glass-card {
+            width:300px; min-height:160px;
+            background:rgba(255,255,255,0.2);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            border:1px solid rgba(255,255,255,0.5);
+            border-radius:20px;
+            padding:28px 24px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.06);
+            transition:transform 0.3s ease, box-shadow 0.3s ease;
+            position:relative; overflow:hidden;
+        }
+        .glass-card:hover {
+            transform:translateY(-4px);
+            box-shadow:0 16px 48px rgba(0,0,0,0.10);
+        }
+        /* 毛玻璃内部微光 */
+        .glass-card::before {
+            content:''; position:absolute; top:-30px; right:-30px;
+            width:80px; height:80px; border-radius:50%;
+            background:rgba(255,107,157,0.10);
+            pointer-events:none;
+        }
+        .glass-card-title {
+            font-family:'Inter','SF Pro Display',-apple-system,sans-serif;
+            font-size:16px; font-weight:600; color:#2D1B2E;
+            margin-bottom:10px;
+            display:flex; align-items:center; gap:8px;
+            position:relative; z-index:1;
+        }
+        .glass-card-desc {
+            font-family:'Inter',-apple-system,sans-serif;
+            font-size:13px; color:rgba(50,30,40,0.7);
+            line-height:1.6; position:relative; z-index:1;
+        }
+        /* ===== 弹窗 overlay ===== */
+        .popup-overlay {
+            position:fixed; inset:0; z-index:300;
+            background:rgba(0,0,0,0.45);
+            display:flex; align-items:center; justify-content:center;
+            opacity:0; pointer-events:none; transition:opacity 0.35s;
+        }
+        .popup-overlay.active { opacity:1; pointer-events:auto; }
+        .popup-close {
+            position:absolute; top:16px; right:20px;
+            background:none; border:none; font-size:22px; cursor:pointer;
+            color:#888; z-index:10; transition:color 0.2s;
+        }
+        .popup-close:hover { color:#333; }
+
+        /* ===== 报纸弹窗 ===== */
+        .newspaper-popup {
+            width:min(720px,92vw); max-height:85vh; overflow-y:auto;
+            background:#f5f2e8; border:2px solid #333;
+            box-shadow:8px 8px 0 rgba(0,0,0,0.15);
+            padding:32px 28px; position:relative;
+            font-family:Georgia,'Times New Roman','Noto Serif SC',serif;
+            color:#222;
+        }
+        .np-header {
+            text-align:center; border-top:3px double #333;
+            border-bottom:3px double #333; padding:14px 0; margin-bottom:18px;
+        }
+        .np-header .np-title {
+            font-size:32px; font-weight:900; letter-spacing:0.08em;
+            font-family:Georgia,serif;
+        }
+        .np-header .np-meta {
+            font-size:11px; color:#555; margin-top:4px;
+            display:flex; justify-content:center; gap:20px;
+        }
+        .np-headline {
+            font-size:20px; font-weight:900; line-height:1.4;
+            margin-bottom:16px; padding-bottom:12px;
+            border-bottom:1px solid #ccc;
+        }
+        .np-columns { display:flex; gap:24px; }
+        .np-col { flex:1; }
+        .np-col h4 {
+            font-size:13px; font-weight:900; text-transform:uppercase;
+            letter-spacing:0.05em; border-bottom:1px solid #999;
+            padding-bottom:4px; margin-bottom:10px; color:#444;
+        }
+        .np-col ul { list-style:none; font-size:13px; line-height:2; }
+        .np-col ul li::before { content:'▸ '; font-size:10px; color:#666; }
+        .np-footer {
+            margin-top:16px; padding:14px; border:1px solid #ccc;
+            text-align:center; font-size:12px; color:#555;
+        }
+        .np-footer input {
+            padding:8px 12px; border:1px solid #bbb; border-radius:4px;
+            font-size:12px; font-family:inherit; width:200px; margin-right:8px;
+            background:#fdfcf7;
+        }
+        .np-footer button {
+            padding:8px 16px; background:#333; color:#f5f2e8;
+            border:none; border-radius:4px; cursor:pointer; font-size:12px;
+        }
+
+        /* ===== 杂志弹窗 ===== */
+        .magazine-popup {
+            width:min(680px,92vw); max-height:85vh; overflow-y:auto;
+            background:#fff; border-radius:4px;
+            box-shadow:0 16px 48px rgba(0,0,0,0.15); position:relative;
+        }
+        .mag-hero {
+            width:100%; height:200px; overflow:hidden; position:relative;
+        }
+        .mag-hero img { width:100%; height:100%; object-fit:cover; }
+        .mag-hero-overlay {
+            position:absolute; bottom:0; left:0; right:0;
+            background:linear-gradient(transparent,rgba(0,0,0,0.5));
+            padding:20px 24px;
+        }
+        .mag-hero-overlay .mag-tag {
+            display:inline-block; padding:3px 10px; border-radius:2px;
+            background:#fff; color:#333; font-size:10px; font-weight:700;
+            text-transform:uppercase; letter-spacing:0.1em;
+        }
+        .mag-body { padding:24px 28px; }
+        /* 杂志条目列表 */
+        .mag-list { display:flex; flex-direction:column; gap:0; }
+        .mag-item {
+            display:flex; align-items:flex-start; gap:14px;
+            padding:16px 0; border-bottom:1px solid #f5f0f1;
+            cursor:pointer; transition:background 0.2s;
+        }
+        .mag-item:last-child { border-bottom:none; }
+        .mag-item:hover { background:rgba(255,107,157,0.03); }
+        .mag-item-icon {
+            width:36px; height:36px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-size:18px; flex-shrink:0;
+            background:rgba(255,107,157,0.06);
+        }
+        .mag-item-info { flex:1; min-width:0; }
+        .mag-item-title {
+            font-size:14px; font-weight:600; color:#2D1B2E;
+            margin-bottom:3px; font-family:'Inter','PingFang SC',sans-serif;
+        }
+        .mag-item-desc {
+            font-size:12px; color:#a89497; line-height:1.5;
+            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        }
+        .mag-item-arrow { color:#ccc; font-size:12px; align-self:center; }
+        .mag-section-title {
+            font-size:15px; font-weight:700; color:#2D1B2E;
+            margin-bottom:16px; font-family:'Inter','PingFang SC',sans-serif;
+        }
+        .mag-title {
+            font-size:24px; font-weight:700; line-height:1.3; color:#1a1a1a;
+            margin-bottom:8px; font-family:'Inter','PingFang SC',sans-serif;
+        }
+        .mag-author {
+            font-size:12px; color:#888; margin-bottom:18px;
+            display:flex; align-items:center; gap:8px;
+        }
+        .mag-author-dot { width:4px; height:4px; border-radius:50%; background:#ccc; }
+        .mag-text {
+            font-size:14px; line-height:1.9; color:#333;
+            font-family:'Inter','PingFang SC',sans-serif;
+        }
+        .mag-actions {
+            display:flex; gap:12px; margin-top:20px; padding-top:16px;
+            border-top:1px solid #f0f0f0;
+        }
+        .mag-btn {
+            padding:9px 20px; border-radius:22px; font-size:13px;
+            font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.2s;
+        }
+        .mag-btn-like {
+            background:#FF6B9D; color:#fff; border:none;
+        }
+        .mag-btn-like:hover { background:#D6336C; }
+        .mag-btn-share {
+            background:transparent; border:1.5px solid #ddd; color:#666;
+        }
+        .mag-btn-share:hover { border-color:#999; }
+
+        /* 封面卡片 - 紧凑版 */
+        .feature-card {
+            width:320px; min-height:90px;
+            background:rgba(255,255,255,0.2);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            border:1px solid rgba(255,255,255,0.5);
+            border-radius:16px; padding:16px 20px; cursor:pointer;
+            box-shadow:0 4px 16px rgba(0,0,0,0.04);
+            transition:transform 0.3s, box-shadow 0.3s;
+            position:relative; overflow:hidden;
+            display:flex; align-items:center; gap:14px;
+        }
+        .feature-card:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,0.08); }
+        .fc-pixel-icon {
+            width:44px; height:44px; flex-shrink:0;
+            display:flex; align-items:center; justify-content:center;
+            font-size:28px;
+            image-rendering:pixelated;
+        }
+        .fc-pixel-icon img { width:100%; height:100%; image-rendering:pixelated; }
+        .fc-info { flex:1; min-width:0; }
+        .fc-title {
+            font-family:'Inter',-apple-system,sans-serif;
+            font-size:14px; font-weight:700; color:#2D1B2E;
+            margin-bottom:4px;
+        }
+        .fc-desc {
+            font-family:'Inter',-apple-system,sans-serif;
+            font-size:12px; color:rgba(50,30,40,0.6); line-height:1.5;
+            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        }
+        /* 报纸折角 */
+        .newspaper-fold {
+            position:absolute; top:0; right:0;
+            width:0; height:0;
+            border-style:solid;
+            border-width:0 36px 36px 0;
+            border-color:transparent #f5f2e8 transparent transparent;
+        }
+        .feature-card:hover .newspaper-fold {
+            border-color:transparent #e8dcc8 transparent transparent;
+        }
+        .mag-cover-preview {
+            width:100%; height:100px; border-radius:10px;
+            background:linear-gradient(135deg,#fce4ec,#e8eaf6);
+            display:flex; align-items:center; justify-content:center;
+            margin-bottom:14px; font-size:40px; overflow:hidden;
+        }
+        .mag-cover-badge {
+            position:absolute; top:14px; right:16px;
+            padding:3px 10px; border-radius:10px;
+            background:rgba(255,255,255,0.7); font-size:10px;
+            color:#888; font-weight:500;
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align:center; padding:40px 24px;
+            background:rgba(253,244,244,0.6);
+            border-top:1px solid rgba(214,51,108,0.08);
+            font-family:'Inter',-apple-system,sans-serif;
+            font-size:13px; color:#b8a0a5;
+        }
+        .footer a { color:#c97c87; text-decoration:none; margin:0 12px; }
+        .footer a:hover { color:#D6336C; }
+
+        /* 响应式 */
+        @media (max-width:1023px) {
+            .main-modules { padding:0 30px; }
+            .z-row { margin-bottom:60px; }
+            .pixel-card { width:340px; }
+            .sub-modules { gap:24px; }
+        }
+        @media (max-width:768px) {
+            .z-row { justify-content:center!important; margin-bottom:40px; }
+            .pixel-card { width:100%; max-width:360px; }
+            .sub-modules { flex-direction:column; align-items:center; }
+            .feature-card { width:100%; max-width:440px; }
+        }
+
+        /* 响应式 */
+        @media (max-width:768px) {
+            .navbar { padding:0 20px; }
+            .nav-center { gap:18px; }
+            .nav-link { font-size:13px; }
+            .nav-auth { padding:5px 16px; font-size:12px; }
+            .orbit-stage { width:100vw; height:600px; left:45%; }
+            .center-hub-inner { padding:28px 36px; border-radius:24px; }
+            .logo-text { font-size:36px; }
+            .tagline { font-size:13px; }
+            .enter-btn { padding:12px 32px; font-size:14px; }
+            .scene-card { width:100px!important; height:75px!important; border-radius:12px; }
+            /* 模块适配 */
+            .z-row { justify-content:center!important; margin-bottom:40px; flex-wrap:wrap; gap:24px; } .z-row.row-2 { flex-direction:column!important; align-items:center!important; }
+            .pixel-card { width:100%; max-width:360px; }
+            .match-preview { width:100%; max-width:360px; }
+            .sub-modules { flex-direction:column; align-items:center; }
+            .feature-card { width:100%; max-width:440px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ====== 导航栏 ====== -->
+<nav class="navbar">
+    <div class="nav-left">
+        <a href="/" class="nav-logo">Social</a>
+    </div>
+    <div class="nav-center">
+        <a href="/workshop.html" class="nav-link">捏个分身</a>
+        <a href="javascript:void(0)" onclick="window.checkMatchAndGo ? checkMatchAndGo() : window.location.href='/scene.html'" class="nav-link">开始约会</a>
+        <a href="/report.html" class="nav-link">看看缘分</a>
+        <a href="#about" class="nav-link">关于</a>
+    </div>
+    <div class="nav-right">
+        <button class="nav-auth" onclick="openLoginModal()">登录 / 注册</button>
+    </div>
+</nav>
+
+<!-- ====== Hero 区 ====== -->
+<section class="hero" id="hero">
+
+    <!-- 粒子 -->
+    <div class="ambient-particles" id="particles"></div>
+
+    <!-- 3D轨道 -->
+    <div class="orbit-stage" id="orbitStage">
+        <div class="orbit-decor"></div>
+        <div class="orbit-decor orbit-decor-2"></div>
+        <div class="orbit-ring" id="orbitRing"></div>
+    </div>
+
+    <!-- 中心入口 -->
+    <div class="center-hub">
+        <div class="center-hub-inner">
+            <div class="logo-text typewriter" id="heroLogo">Social</div>
+            <div class="tagline">你的心动预演，正在虚拟世界悄然上演</div>
+            <a onclick="scrollToModules()" class="enter-btn" style="cursor:pointer">
+                开始探索 <span class="arrow">→</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 向下滚动提示 -->
+    <div class="scroll-hint">
+        向下滚动探索更多
+        <span class="arrow-down">⌄</span>
+    </div>
+</section>
+
+<!-- ====== 下方内容区 ====== -->
+<section class="content-section" id="about">
+
+    <!-- 主模块 Z 字形 -->
+    <div class="main-modules">
+
+        <!-- Z字第一行：心动信号站 + 放映室 -->
+        <div class="z-row row-1">
+            <!-- 心动信号站 -->
+            <div class="signal-station" id="signalStation">
+                <canvas class="signal-particles" id="signalParticles"></canvas>
+
+                <!-- 左侧：双卡区 -->
+                <div class="signal-left">
+                    <div class="signal-title">✨ 心动信号站</div>
+                    <div class="dual-cards" id="dualCards">
+                        <!-- JS动态渲染左右双卡 -->
+                    </div>
+                    <div class="mp-history-btn">
+                        <button class="mp-history-link" onclick="showMatchHistory()">📜 历史记录</button>
+                    </div>
+                </div>
+
+                <!-- 流动光带 -->
+                <div class="signal-beam" id="signalBeam"></div>
+
+                <!-- 右侧：匹配档案 -->
+                <div class="signal-right" id="signalRight">
+                    <div class="archive-window">
+                        <div class="archive-titlebar">
+                            <span class="archive-dot"></span>
+                            <span class="archive-dot"></span>
+                            <span class="archive-dot"></span>
+                            <span class="archive-title-text">✨ 匹配档案</span>
+                        </div>
+                        <div class="archive-body" id="archiveBody">
+                            <div class="archive-idle">
+                                <span class="archive-idle-icon">📂</span>
+                                <span>点击 🎮 开始匹配<br>查看对方档案</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Z字第二行：放映室 -->
+        <div class="z-row row-2" style="flex-direction:column;align-items:center;">
+            <div class="sr-main-title" style="width:100%;max-width:1200px;padding:0 20px;">
+                <div class="sr-main-icon">🎬</div> 心动放映室
+            </div>
+            <div class="screening-room" id="screeningRoom">
+                <!-- 粒子Canvas背景层 -->
+                <canvas class="sr-canvas" id="srCanvas"></canvas>
+
+                <!-- 本月精选轮播大卡 -->
+                <div style="width:100%;">
+                <div class="sr-featured" id="srFeatured">
+                    <button class="sr-arrow left" onclick="srPrev()">◀</button>
+                    <button class="sr-arrow right" onclick="srNext()">▶</button>
+                    <div class="sr-dots" id="srDots"></div>
+                    <!-- 幻灯片JS动态渲染 -->
+                </div>
+                </div>
+
+                <!-- 三列 -->
+                <div style="display:flex;gap:16px;width:100%;position:relative;z-index:1;">
+                <!-- 左列 -->
+                <div class="sr-column">
+                    <div class="sr-col-title">🔥 热门场景</div>
+                    <div class="sr-item">☕ 咖啡馆初遇 <span class="hot">🔥9.8</span></div>
+                    <div class="sr-item">🌙 星空漫游 <span class="hot">🔥9.5</span></div>
+                    <div class="sr-item">🎪 游园惊梦 <span class="hot">🔥9.2</span></div>
+                    <div class="sr-item">📚 图书馆邂逅 <span class="hot">🔥8.9</span></div>
+                </div>
+                <!-- 中列 -->
+                <div class="sr-column">
+                    <div class="sr-col-title">✨ 近期上新</div>
+                    <div class="sr-item">🍷 微醺酒馆 · 全新声效</div>
+                    <div class="sr-item">🎭 假面舞会 · 一键变装</div>
+                    <div class="sr-item">📚 书店偶遇 · 实时对话</div>
+                    <div class="sr-item">🌧️ 雨中漫步 · 氛围升级</div>
+                </div>
+                <!-- 右列 -->
+                <div class="sr-column">
+                    <div class="sr-col-title">💬 热议话题</div>
+                    <div class="sr-tag-cloud">
+                        <span class="sr-tag">#社恐友好</span>
+                        <span class="sr-tag">#心动狙击</span>
+                        <span class="sr-tag">#模拟情书</span>
+                        <span class="sr-tag">#浪漫满分</span>
+                        <span class="sr-tag">#今晚不睡</span>
+                        <span class="sr-tag">#素颜也OK</span>
+                        <span class="sr-tag">#暗号对上了</span>
+                        <span class="sr-tag">#全糖去冰</span>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Z字第三行：匹配报告 + 心动备忘录 -->
+        <div class="z-row row-3" style="gap:20px;">
+            <!-- 左侧：匹配报告 -->
+            <div class="report-card">
+                <div class="report-card-title">
+                    <span class="pixel-icon">📊</span> 心动档案
+                </div>
+                <div class="report-content" id="reportContent">
+                    <!-- JS动态填充 -->
+                </div>
+            </div>
+
+            <!-- 右侧：心动备忘录 -->
+            <div class="diary-card" id="diaryCard">
+                <div class="diary-header">🌱 心动备忘录</div>
+                <div class="diary-lines">
+                    <!-- AI洞察 -->
+                    <div class="diary-section" id="aiInsight">
+                        <div class="diary-label">🤖 AI 观察</div>
+                        <div class="diary-text" id="aiInsightText">点击「开始探索」开始交友后，这里将展示AI对你的观察分析。</div>
+                    </div>
+                    <!-- 类型笔记 -->
+                    <div class="diary-section">
+                        <div class="diary-label">💭 我的笔记</div>
+                        <div class="diary-text" id="myNote" contenteditable="true" placeholder="记录你的类型偏好、恋爱观变化..." oninput="saveDiaryNote()"></div>
+                    </div>
+                    <!-- 新鲜发现 -->
+                    <div class="diary-section">
+                        <div class="diary-label">✨ 新鲜发现</div>
+                        <div class="diary-text" id="discoveryNote" contenteditable="true" placeholder="今天在Social里发现了什么？" oninput="saveDiaryNote()"></div>
+                    </div>
+                    <!-- 恋爱关键词 -->
+                    <div class="diary-keywords" id="diaryKeywords">
+                        <span class="dk-tag">#主动</span>
+                        <span class="dk-tag">#感受派</span>
+                        <span class="dk-tag">#浪漫主义</span>
+                    </div>
+                </div>
+                <button class="diary-add-btn" onclick="toggleDiaryInput()">+ 写日记</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 次模块毛玻璃区 -->
+    <div class="sub-modules-wrap">
+        <div class="sub-modules">
+
+            <!-- Social实验室（报纸风） -->
+            <div class="feature-card" onclick="openNewspaper()" style="position:relative">
+                <div class="fc-pixel-icon">📰</div>
+                <div class="fc-info">
+                    <div class="fc-title">Social 实验室</div>
+                    <div class="fc-desc">AI分身 v2.5 · 优化日志 · 内测招募</div>
+                </div>
+                <div class="newspaper-fold"></div>
+            </div>
+
+            <!-- 心动回响（杂志风） -->
+            <div class="feature-card" onclick="openMagazine()" style="position:relative">
+                <div class="fc-pixel-icon">💌</div>
+                <div class="fc-info">
+                    <div class="fc-title">心动回响</div>
+                    <div class="fc-desc">我清楚地看见你</div>
+                </div>
+                <span class="mag-cover-badge" id="weekBadge">📅 Week</span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="footer">
+        <a href="#hero">首页</a>
+        <a href="/workshop.html">捏个分身</a>
+        <a href="/scene.html">开始约会</a>
+        <a href="/report.html">看看缘分</a>
+        <a href="#about">关于</a>
+        <br><br>
+        &copy; 2026 Social · AI数字人虚拟约会平台
+    </div>
+
+</section>
+
+<script>
+// ===== 场景图片 =====
+var sceneImages = [
+    'images/生成QQ像素风情侣场景图.png',
+    'images/生成QQ像素风情侣场景图 (1).png',
+    'images/生成QQ像素风情侣场景图 (2).png',
+    'images/生成QQ像素风情侣场景图 (3).png',
+    'images/生成QQ像素风情侣场景图 (5).png',
+    'images/生成QQ像素风情侣场景图 (6).png',
+    'images/生成QQ像素风情侣场景图 (7).png',
+    'images/生成QQ像素风情侣场景图 (8).png',
+];
+
+var COUNT = sceneImages.length;
+var orbitRing = document.getElementById('orbitRing');
+
+var miniFigures = ['🧑‍💻','👩‍💻','🧑‍🎨','👩‍🎤','🧑‍🔬','👩‍🚀','🧑‍🏫','👩‍🍳','🦊','🐱','🐶','🐰','🦄','🐼','🐨','🌟'];
+
+// 创建场景卡片
+var cards = [];
+for (var i = 0; i < COUNT; i++) {
+    var wrapper = document.createElement('div');
+    wrapper.className = 'scene-card';
+
+    var img = document.createElement('img');
+    img.src = sceneImages[i];
+    img.alt = '场景 ' + (i + 1);
+    img.loading = 'lazy';
+    img.onerror = function() {
+        this.style.display='none';
+        this.parentElement.style.background='linear-gradient(135deg,#fce8ec,#fdf4f4)';
+    };
+    wrapper.appendChild(img);
+
+    var figureEl = document.createElement('span');
+    figureEl.className = 'mini-figure';
+    figureEl.textContent = miniFigures[i % miniFigures.length];
+    figureEl.style.cssText =
+        'bottom:'+(-8+Math.random()*6)+'px;'+
+        'right:'+(-4+Math.random()*14)+'px;'+
+        'font-size:'+(14+Math.random()*10)+'px;'+
+        'animation-delay:'+(Math.random()*2)+'s;';
+    wrapper.appendChild(figureEl);
+
+    orbitRing.appendChild(wrapper);
+
+    var isUpper = i < COUNT/2;
+    var baseY = isUpper ? -180 : 180;
+    var yRand = (Math.random()-0.5)*80;
+
+    cards.push({
+        el: wrapper,
+        angle: (i/COUNT)*Math.PI*2,
+        rx: 440+Math.random()*80,
+        rz: 200+Math.random()*80,
+        baseY: baseY+yRand,
+        yAmp: 30+Math.random()*40,
+    });
+}
+
+// 3D环绕动画
+var globalAngle = 0;
+var ROTATE_SPEED = 0.12;
+
+function animate(timestamp) {
+    var dt = Math.min((timestamp-(animate.lastTime||timestamp))/1000, 0.1);
+    animate.lastTime = timestamp;
+    globalAngle -= ROTATE_SPEED*dt;
+
+    for (var i=0;i<cards.length;i++) {
+        var card = cards[i];
+        var theta = card.angle+globalAngle;
+        var x = Math.cos(theta)*card.rx;
+        var z = Math.sin(theta)*card.rz;
+        var y = card.baseY+Math.sin(theta*2)*card.yAmp;
+
+        var depthRatio = (z+card.rz)/(card.rz*2);
+        var scale = 0.65+depthRatio*0.55;
+        var opacity = 0.4+depthRatio*0.6;
+        var zIdx = Math.round((z+card.rz)*10);
+
+        card.el.style.transform =
+            'translate3d('+x+'px,'+y+'px,'+z+'px) scale('+scale+')';
+        card.el.style.opacity = opacity;
+        card.el.style.zIndex = zIdx;
+        card.el.style.filter = 'brightness('+(0.8+scale*0.25)+')';
+    }
+    requestAnimationFrame(animate);
+}
+animate.lastTime = 0;
+requestAnimationFrame(animate);
+
+// 环境光粒子
+(function(){
+    var container = document.getElementById('particles');
+    for (var i=0;i<40;i++) {
+        var p = document.createElement('div');
+        p.className = 'particle';
+        var size = 2+Math.random()*4;
+        p.style.cssText =
+            'width:'+size+'px;height:'+size+'px;'+
+            'left:'+(Math.random()*100)+'%;'+
+            'bottom:-'+(Math.random()*20)+'px;'+
+            'animation-delay:'+(Math.random()*6)+'s;'+
+            'animation-duration:'+(5+Math.random()*7)+'s;'+
+            'background:'+['#c97c87','#e8a0a8','#f0c4cc','#d9b2b5'][Math.floor(Math.random()*4)]+';';
+        container.appendChild(p);
+    }
+})();
+
+// 爱心光波
+(function(){
+    setInterval(function(){
+        var heart = document.createElement('div');
+        heart.className = 'heart-particle';
+        heart.innerHTML = '💕';
+        var leftVal = 30+Math.random()*40;
+        var bottomVal = Math.random()*10;
+        var fontSize = 18+Math.random()*30;
+        var delay = Math.random()*2;
+        var duration = 4+Math.random()*6;
+        var blurVal = 0.5+Math.random()*2;
+        heart.style.cssText =
+            'left:'+leftVal+'%;bottom:-'+bottomVal+'px;'+
+            'font-size:'+fontSize+'px;'+
+            'animation-delay:'+delay+'s;'+
+            'animation-duration:'+duration+'s;'+
+            'filter:blur('+blurVal+'px);'+
+            'opacity:'+(0.3+Math.random()*0.5)+';';
+        document.getElementById('hero').appendChild(heart);
+        setTimeout(function(){heart.remove();},8000);
+    },800);
+})();
+
+// 鼠标视差（仅Hero区）
+document.addEventListener('mousemove',function(e){
+    var cx = e.clientX/window.innerWidth-0.5;
+    var cy = e.clientY/window.innerHeight-0.5;
+    var stage = document.getElementById('orbitStage');
+    stage.style.transform = 'translate(calc(-50% + '+(cx*20)+'px), calc(-50% + '+(cy*15)+'px))';
+});
+
+document.addEventListener('touchmove',function(e){
+    var cx = e.touches[0].clientX/window.innerWidth-0.5;
+    var cy = e.touches[0].clientY/window.innerHeight-0.5;
+    var stage = document.getElementById('orbitStage');
+    stage.style.transform = 'translate(calc(-50% + '+(cx*15)+'px), calc(-50% + '+(cy*10)+'px))';
+},{passive:true});
+
+// ===== 心动信号站（双卡布局） =====
+(function initSignalStation() {
+    var container = document.getElementById('dualCards');
+    if (!container) return;
+
+    var myPersona = null;
+    try { myPersona = JSON.parse(localStorage.getItem('social_my_persona') || 'null'); } catch(e) {}
+
+    var TAG_COLORS = ['pink','purple','blue','mint','peach'];
+
+    // ===== 渲染左侧：我的分身 =====
+    function renderSelfCard() {
+        if (!myPersona) {
+            return '<div class="side-card"><div class="sc-label">我的分身</div><div class="sc-empty">🔮<br>先去工坊<br>创建分身</div></div>';
+        }
+        var tags = [];
+        if (myPersona.mbti) tags.push(myPersona.mbti);
+        if (myPersona.personality) tags.push(myPersona.personality.split('·')[0].trim());
+        if (myPersona.hbd) {
+            var m = parseInt(myPersona.hbd);
+            var zodiac = ['摩羯','水瓶','双鱼','白羊','金牛','双子','巨蟹','狮子','处女','天秤','天蝎','射手'][(m||1)-1] || '';
+            if (zodiac) tags.push(zodiac+'座');
+        }
+        if (myPersona.interests) myPersona.interests.slice(0,2).forEach(function(t){tags.push(t);});
+        if (myPersona.values) tags.push(myPersona.values.split('·')[0].trim());
+        tags = tags.slice(0,5);
+
+        var declaration = (myPersona.bio || '').replace(/[你好，！。,. ]/g,'').slice(0,10) || '期待与你相遇';
+
+        var avatarHTML = '<span>'+(myPersona.gender==='male'?'🧑‍💻':'👩‍🎨')+'</span>';
+        if (myPersona.avatarDataUrl) {
+            avatarHTML = '<img src="'+myPersona.avatarDataUrl+'" alt="头像">';
+        }
+
+        var tagsHTML = tags.map(function(t,i){
+            return '<span class="sc-tag '+TAG_COLORS[i%TAG_COLORS.length]+'">'+t+'</span>';
+        }).join('');
+
+        var nameRow = (myPersona.name||'未命名') + ' · ' + (myPersona.age||'?') + '岁';
+        if (myPersona.hbd) nameRow += ' · ' + myPersona.hbd;
+
+        return '<div class="side-card">' +
+            '<div class="sc-label">我的分身</div>' +
+            '<div class="sc-avatar'+(myPersona.pixelMode?' pixelated':'')+'">'+avatarHTML+'</div>' +
+            '<div class="sc-name-row">'+nameRow+'</div>' +
+            '<div class="sc-tags">'+tagsHTML+'</div>' +
+            '<div class="sc-declaration">'+declaration+'</div>' +
+            '<button class="sc-edit-btn" onclick="window.location.href=\'workshop.html\'" title="更新个人信息">✎ 更新资料</button>' +
+            '</div>';
+    }
+
+    // ===== 匹配对象库 =====
+    var pool = [
+        {name:'陈墨',age:27,gender:'male',bio:'心里有片宇宙',tags:['INTJ-T','攀岩','摄影'],city:'北京·海淀'},
+        {name:'沈岸',age:29,gender:'male',bio:'把木头变成温度',tags:['ISFJ-T','潜水','烹饪'],city:'上海·静安'},
+        {name:'陆川',age:26,gender:'male',bio:'想到什么就去做',tags:['ENFP-A','公路旅行','脱口秀'],city:'成都·高新'},
+        {name:'江屿',age:28,gender:'male',bio:'冲浪程序员',tags:['ESTP-A','摩托车','露营'],city:'深圳·南山'},
+        {name:'林悦',age:24,gender:'female',bio:'泡咖啡馆的插画师',tags:['INFP-T','尤克里里','逛书店'],city:'杭州·西湖'},
+        {name:'苏糖',age:22,gender:'female',bio:'行走的小太阳',tags:['ENFP-A','烘焙','桌游'],city:'广州·天河'},
+        {name:'姜莱',age:25,gender:'female',bio:'创业服装设计师',tags:['ENTJ-A','看展','爵士乐'],city:'北京·朝阳'},
+        {name:'温晴',age:23,gender:'female',bio:'种满花的咨询师',tags:['ISFP-T','花艺','养猫'],city:'南京·鼓楼'},
+    ];
+
+    var myGender = myPersona ? (myPersona.gender || 'male') : 'male';
+    var targetGender = myGender === 'male' ? 'female' : 'male';
+    var filtered = pool.filter(function(p){ return p.gender === targetGender; });
+    if (filtered.length === 0) filtered = pool;
+
+    function shuffle(a) { for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;} return a; }
+    var shuffled = shuffle(filtered.slice());
+    var currentIdx = 0;
+    var matchHistory = [];
+    try { matchHistory = JSON.parse(localStorage.getItem('social_match_history') || '[]'); } catch(e) {}
+
+    // ===== 渲染右侧：匹配对象 ==
+
+    function renderAll() {
+        var p = currentIdx < shuffled.length ? shuffled[currentIdx] : null;
+        if (!p) { currentIdx = 0; shuffled = shuffle(filtered.slice()); p = shuffled[0]; }
+        window._currentMatch = p;
+        var next1 = (currentIdx+1 < shuffled.length) ? shuffled[currentIdx+1] : shuffled[0];
+        var next2 = (currentIdx+2 < shuffled.length) ? shuffled[currentIdx+2] : (shuffled.length>1?shuffled[0]:null);
+        var stackHTML = '<div class="card-stack blurred" id="matchStack" style="position:relative;">' +
+            renderMatchCardContent(p, true) +
+            renderMatchCardContent(next1, false) +
+            (next2 ? renderMatchCardContent(next2, false) : '') +
+            '<div class="start-match-text" id="startMatchText" onclick="startMatching()">🎮 开始匹配</div>' +
+            '</div>';
+        container.innerHTML =
+            renderSelfCard() +
+            '<div class="dual-heart" id="dualHeart">💗</div>' +
+            stackHTML;
+    }
+
+    window.startMatching = function() {
+        var stack = document.getElementById('matchStack');
+        var text = document.getElementById('startMatchText');
+        var heart = document.getElementById('dualHeart');
+        if (!stack) return;
+        stack.classList.remove('blurred');
+        stack.classList.add('revealing');
+        if (text) text.classList.add('matched');
+        if (heart) { heart.classList.add('pulse'); setTimeout(function(){heart.classList.remove('pulse');}, 1800); }
+        setTimeout(function() {
+            stack.classList.remove('revealing');
+            var layers = stack.querySelectorAll('.card-stack-layer');
+            layers.forEach(function(l){ l.style.filter = ''; l.style.pointerEvents = ''; });
+        }, 900);
+
+        // 清除右侧档案区模糊
+        var rightPanel = document.getElementById('signalRight');
+        if (rightPanel) {
+            rightPanel.style.filter = '';
+            rightPanel.style.transform = '';
+            rightPanel.style.opacity = '';
+        }
+
+        // 填充右侧档案区
+        populateArchive(window._currentMatch);
+    };
+
+    function populateArchive(person) {
+        if (!person) return;
+        var body = document.getElementById('archiveBody');
+        if (!body) return;
+        // 堆叠翻页动效
+        body.classList.add('archive-flip');
+        setTimeout(function(){ body.classList.remove('archive-flip'); }, 400);
+
+        // 逐段延迟展示
+        var sections = [
+            {title:'🎬 身份档案', content:(person.name||'')+' · '+(person.age||'?')+'岁 · '+(person.city||'未知城市'), delay:100},
+            {title:'💡 性格标签', content:(person.tags||[]).slice(0,3).join(' · '), delay:300},
+            {title:'🎯 兴趣爱好', content:(person.tags||[]).join(' · '), delay:500},
+            {title:'💬 个人介绍', content:person.bio||'一个有趣的灵魂', delay:700},
+            {title:'⚡ 雷点预警', content:'暂无雷点记录（AI智能分析中...）', delay:900},
+        ];
+
+        body.innerHTML = '';
+        sections.forEach(function(sec, i) {
+            setTimeout(function() {
+                var div = document.createElement('div');
+                div.className = 'archive-section';
+                div.style.animationDelay = '0s';
+                div.innerHTML = '<div class="archive-section-title">'+sec.title+'</div>'+
+                    '<div class="archive-section-content type-cursor">'+sec.content+'</div>';
+                body.appendChild(div);
+            }, sec.delay);
+        });
+
+        // 底部按钮
+        setTimeout(function() {
+            var actions = document.createElement('div');
+            actions.className = 'archive-actions archive-section';
+            actions.innerHTML =
+                '<button class="archive-btn skip" onclick="signalNope()">❌ 跳过</button>'+
+                '<button class="archive-btn like" onclick="signalLike()">❤️ 喜欢</button>';
+            body.appendChild(actions);
+        }, 1100);
+    }
+
+    function renderMatchCardContent(person, isTop) {
+        if (!person) return '';
+        var tagsHTML = (person.tags||[]).slice(0,3).map(function(t,i){
+            return '<span class="sc-tag '+TAG_COLORS[(i+2)%TAG_COLORS.length]+'">'+t+'</span>';
+        }).join('');
+        return '<div class="side-card match-card card-stack-layer">' +
+            '<div class="sc-label">匹配对象</div>' +
+            '<div class="sc-avatar" style="background:linear-gradient(135deg,#e8eaf6,#c5cae9);"><span>'+(person.gender==='male'?'🧑‍💻':'👩‍🎨')+'</span></div>' +
+            '<div class="sc-name-row">'+person.name+' · '+person.age+'岁 · '+(person.city||'')+'</div>' +
+            '<div class="sc-tags">'+tagsHTML+'</div>' +
+            '<div class="sc-declaration">'+person.bio+'</div>' +
+            (isTop ? '<div class="sc-actions">' +
+            '<button class="sc-act-btn nope" onclick="signalNope()" title="不喜欢">✕</button>' +
+            '<button class="sc-act-btn like" onclick="signalLike()" title="喜欢">♥</button>' +
+            '</div>' : '') +
+            '</div>';
+    }
+
+    // ===== 交互 =====
+    window.signalNope = function() {
+        var p = window._currentMatch;
+        var dupIdx2 = -1;
+        for (var hi2 = 0; hi2 < matchHistory.length; hi2++) {
+            if (matchHistory[hi2].name === (p?p.name:'') && matchHistory[hi2].liked === false) { dupIdx2 = hi2; break; }
+        }
+        if (dupIdx2 >= 0) matchHistory.splice(dupIdx2, 1);
+        matchHistory.unshift({id: Date.now()+'-'+Math.random().toString(36).slice(2,8), name:p?p.name:'', age:p?p.age:'', tags:p?p.tags:[], time:new Date().toLocaleString('zh-CN'), liked:false});
+        if(matchHistory.length>20)matchHistory=matchHistory.slice(0,20);
+        localStorage.setItem('social_match_history',JSON.stringify(matchHistory));
+
+        var stack = document.querySelector('.card-stack');
+        if (stack) {
+            var topCard = stack.querySelector('.card-stack-layer:first-child');
+            if (topCard) topCard.classList.add('swiping-left');
+        }
+        // 右侧档案区同步模糊+右移
+        var rightPanel = document.getElementById('signalRight');
+        if (rightPanel) {
+            rightPanel.style.filter = 'blur(4px)';
+            rightPanel.style.transform = 'translateX(20px)';
+            rightPanel.style.opacity = '0.5';
+            rightPanel.style.transition = 'all 0.4s ease-in-out';
+        }
+        // 重置档案区为空闲状态
+        var archiveBody = document.getElementById('archiveBody');
+        if (archiveBody) {
+            archiveBody.innerHTML = '<div class="archive-idle"><span class="archive-idle-icon">📂</span><span>点击 🎮 开始匹配<br>查看对方档案</span></div>';
+        }
+        setTimeout(function(){ currentIdx++; renderAll(); }, 350);
+    };
+
+    window.signalLike = function() {
+        var p = window._currentMatch; if (!p) return;
+        var dupIdx = -1;
+        for (var hi = 0; hi < matchHistory.length; hi++) {
+            if (matchHistory[hi].name === p.name && matchHistory[hi].liked === true) { dupIdx = hi; break; }
+        }
+        if (dupIdx >= 0) matchHistory.splice(dupIdx, 1);
+        matchHistory.unshift({id: Date.now()+'-'+Math.random().toString(36).slice(2,8), name:p.name, age:p.age, tags:p.tags||[], time:new Date().toLocaleString('zh-CN'), liked:true});
+        if(matchHistory.length>20)matchHistory=matchHistory.slice(0,20);
+        localStorage.setItem('social_match_history',JSON.stringify(matchHistory));
+        localStorage.setItem('social_match_persona',JSON.stringify(p));
+
+        // 加载动画
+        var overlay = document.createElement('div');
+        overlay.className = 'match-overlay';
+        overlay.innerHTML = '<div class="match-overlay-content">'+
+            '<div class="match-loading-hearts">💕</div>'+
+            '<div class="match-loading-text">正在等待对方回应...</div>'+
+            '</div>';
+        document.body.appendChild(overlay);
+        requestAnimationFrame(function(){ overlay.classList.add('active'); });
+
+        var delay = 1500 + Math.random() * 1000;
+        setTimeout(function() {
+            var success = Math.random() > 0.4;
+            if (success) {
+                var canvas = document.createElement('canvas');
+                canvas.style.cssText = 'position:absolute;inset:0;z-index:0;';
+                overlay.insertBefore(canvas, overlay.firstChild);
+                startParticleSystem(canvas);
+                overlay.querySelector('.match-overlay-content').innerHTML =
+                    '<div class="match-overlay-emoji">💘</div>'+
+                    '<div class="match-overlay-text">匹配成功！</div>'+
+                    '<div class="match-overlay-sub">你和 '+p.name+' 心意相通</div>'+
+                    '<button class="match-overlay-btn" onclick="goToDate()">💕 去约会吧！</button>';
+            } else {
+                overlay.querySelector('.match-overlay-content').innerHTML =
+                    '<div class="match-overlay-emoji" style="font-size:60px;">💔</div>'+
+                    '<div class="match-overlay-text" style="color:#999;">对方暂时没有回应</div>'+
+                    '<div class="match-overlay-sub">别灰心，缘分会在下一个转角等你 🌸</div>'+
+                    '<button class="match-overlay-btn" onclick="closeMatchOverlay()">再试试吧</button>';
+            }
+        }, delay);
+    };
+
+    function startParticleSystem(canvas) {
+        var ctx = canvas.getContext('2d');
+        var particles = [];
+        var animId;
+        var colors = ['#FFB6C1','#FFC0CB','#FF69B4','#FF85A2','#FF99B8','#FFB3CC','#ffb3ba','#ff8fa3'];
+        function resize() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        for (var i = 0; i < 150; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: 2 + Math.random() * 6,
+                dx: (Math.random() - 0.5) * 0.4,
+                dy: (Math.random() - 0.5) * 0.4 - 0.2,
+                alpha: 0.3 + Math.random() * 0.3,
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
+        }
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (var i = 0; i < particles.length; i++) {
+                var p = particles[i];
+                p.x += p.dx; p.y += p.dy;
+                if (p.x < -10) p.x = canvas.width + 10;
+                if (p.x > canvas.width + 10) p.x = -10;
+                if (p.y < -10) p.y = canvas.height + 10;
+                if (p.y > canvas.height + 10) p.y = -10;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+            animId = requestAnimationFrame(draw);
+        }
+        draw();
+        canvas._cleanup = function() {
+            cancelAnimationFrame(animId);
+            window.removeEventListener('resize', resize);
+        };
+    }
+
+    window.closeMatchOverlay = function() {
+        document.querySelectorAll('.match-overlay').forEach(function(o) {
+            var cv = o.querySelector('canvas');
+            if (cv && cv._cleanup) cv._cleanup();
+            o.remove();
+        });
+    };
+
+    window.goToDate = function() {
+        document.querySelectorAll('.match-overlay').forEach(function(o) {
+            var cv = o.querySelector('canvas');
+            if (cv && cv._cleanup) cv._cleanup();
+            o.remove();
+        });
+        window.location.href = '/scene.html';
+    };
+
+    window.openLoginModal = function() {
+        var overlay = document.createElement('div');
+        overlay.className = 'popup-overlay';
+        overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+        overlay.id = 'loginOverlay';
+        overlay.innerHTML =
+            '<div class="login-modal" onclick="event.stopPropagation()">'+
+            '<button class="popup-close" onclick="this.closest(\'.popup-overlay\').remove()">✕</button>'+
+            '<div style="text-align:center;font-size:20px;font-weight:700;color:#2D1B2E;margin-bottom:4px;">欢迎来到 Social</div>'+
+            '<div style="text-align:center;font-size:13px;color:#a89497;margin-bottom:16px;">登录或注册，开启你的心动之旅</div>'+
+            '<div class="login-tabs">'+
+            '<button class="login-tab active" onclick="switchLoginTab(\'phone\',this)">📱 手机号</button>'+
+            '<button class="login-tab" onclick="switchLoginTab(\'email\',this)">📧 邮箱</button>'+
+            '</div>'+
+            '<div id="loginPhoneFields">'+
+            '<input class="login-input" type="tel" placeholder="手机号">'+
+            '<div class="login-code-row"><input class="login-input" type="text" placeholder="验证码"><button class="login-code-btn" onclick="sendCode(this)">获取验证码</button></div>'+
+            '</div>'+
+            '<div id="loginEmailFields" style="display:none">'+
+            '<input class="login-input" type="email" placeholder="邮箱地址">'+
+            '<input class="login-input" type="password" placeholder="密码">'+
+            '</div>'+
+            '<button class="login-submit" onclick="doLogin()">登 录</button>'+
+            '<div style="text-align:center;margin-top:12px;font-size:12px;color:#c0b0b5;">登录即表示同意 <a href="#" style="color:#D6336C;">用户协议</a> 和 <a href="#" style="color:#D6336C;">隐私政策</a></div>'+
+            '</div>';
+        document.body.appendChild(overlay);
+        requestAnimationFrame(function() { overlay.classList.add('active'); });
+    };
+
+    window.switchLoginTab = function(type, btn) {
+        document.querySelectorAll('.login-tab').forEach(function(t){t.classList.remove('active');});
+        btn.classList.add('active');
+        document.getElementById('loginPhoneFields').style.display = type==='phone'?'block':'none';
+        document.getElementById('loginEmailFields').style.display = type==='email'?'block':'none';
+    };
+
+    window.sendCode = function(btn) {
+        var sec = 60;
+        btn.disabled = true;
+        var orig = btn.textContent;
+        var timer = setInterval(function() {
+            sec--;
+            btn.textContent = sec + 's 后重试';
+            if (sec <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = orig; }
+        }, 1000);
+        alert('📱 验证码已发送（模拟）');
+    };
+
+    var isLoggedIn = false;
+    var loginNickname = '';
+
+    window.doLogin = function() {
+        var overlay = document.getElementById('loginOverlay');
+        if (overlay) overlay.remove();
+        isLoggedIn = true;
+        // 从弹窗提取昵称（取第一个输入框的值作为昵称）
+        var inputs = overlay.querySelectorAll('.login-input');
+        var phoneOrEmail = inputs.length > 0 ? inputs[0].value : '';
+        loginNickname = phoneOrEmail ? phoneOrEmail.slice(0, 6) + '***' : '用户';
+        updateLoginUI();
+    };
+
+    function updateLoginUI() {
+        var authBtn = document.querySelector('.nav-auth');
+        if (!authBtn) return;
+        if (isLoggedIn) {
+            authBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;">'+
+                '<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#FF6B9D,#D6336C);color:#fff;font-size:11px;font-weight:600;">'+
+                loginNickname[0]+'</span> 已登录</span>';
+            authBtn.onclick = function() { if(confirm('确定退出登录？')) { isLoggedIn = false; loginNickname = ''; updateLoginUI(); } };
+            authBtn.style.borderColor = 'rgba(255,255,255,0.3)';
+        } else {
+            authBtn.innerHTML = '登录 / 注册';
+            authBtn.onclick = function() { openLoginModal(); };
+            authBtn.style.borderColor = 'rgba(255,255,255,0.6)';
+        }
+    }
+
+    window.showMatchHistory = function() {
+        var records = matchHistory;
+        var html = '<div id="historyOverlay" style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)this.remove()"><div style="background:#fff;border-radius:20px;width:min(400px,90vw);max-height:70vh;overflow-y:auto;padding:28px 24px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin:0;font-size:16px;color:#2D1B2E">📜 历史记录</h3><button onclick="document.getElementById(\'historyOverlay\').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#999">✕</button></div>';
+        if (records.length === 0) {
+            html += '<div style="text-align:center;padding:30px;color:#b0a0a5;">暂无历史记录</div>';
+        } else {
+            html += records.map(function(r) {
+                return '<div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #f5f0f1">'+
+                    '<span>'+(r.liked?'💕':'👋')+'</span>'+
+                    '<div style="flex:1"><div style="font-size:14px;font-weight:600">'+r.name+' · '+r.age+'岁</div><div style="font-size:11px;color:#a89497">'+(r.tags||[]).join(' · ')+'</div></div>'+
+                    '<span style="font-size:11px;color:#c4b0b5">'+r.time+'</span></div>';
+            }).join('');
+        }
+        html += '</div></div>';
+        document.body.insertAdjacentHTML('beforeend', html);
+    };
+
+    renderAll();
+
+    // ===== 信号站粒子 =====
+    (function initSignalParticles() {
+        var canvas = document.getElementById('signalParticles');
+        if (!canvas) return;
+        var container = document.getElementById('signalStation');
+        if (!container) return;
+        var ctx = canvas.getContext('2d');
+        var particles = [];
+        var animId;
+
+        function resize() {
+            canvas.width = container.clientWidth + 40;
+            canvas.height = container.clientHeight + 40;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        var colors = ['rgba(255,107,157,0.3)','rgba(255,140,170,0.25)','rgba(200,120,220,0.2)','rgba(255,180,200,0.2)'];
+        for (var i = 0; i < 50; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: 1 + Math.random() * 3,
+                dx: (Math.random() - 0.5) * 0.3,
+                dy: (Math.random() - 0.5) * 0.3 - 0.15,
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (var i = 0; i < particles.length; i++) {
+                var p = particles[i];
+                p.x += p.dx; p.y += p.dy;
+                if (p.x < -10) p.x = canvas.width + 10;
+                if (p.x > canvas.width + 10) p.x = -10;
+                if (p.y < -10) p.y = canvas.height + 10;
+                if (p.y > canvas.height + 10) p.y = -10;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+            }
+            animId = requestAnimationFrame(draw);
+        }
+        draw();
+    })();
+
+    // ===== 放映室 Canvas 粒子 =====
+    (function initScreeningParticles() {
+        var canvas = document.getElementById('srCanvas');
+        if (!canvas) return;
+        var container = document.getElementById('screeningRoom');
+        if (!container) return;
+        var ctx = canvas.getContext('2d');
+        var particles = [];
+        var animId;
+        var colors = ['#FFB6C1','#FFC0CB','#FF69B4','#FF85A2','#FF99B8'];
+
+        function resize() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        for (var i = 0; i < 50; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: 1.5 + Math.random() * 4,
+                dx: (Math.random() - 0.5) * 0.3,
+                dy: (Math.random() - 0.5) * 0.3 - 0.1,
+                alpha: 0.15 + Math.random() * 0.25,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                wave: Math.random() * Math.PI * 2,
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (var i = 0; i < particles.length; i++) {
+                var p = particles[i];
+                p.x += p.dx + Math.sin(p.wave) * 0.15;
+                p.y += p.dy;
+                p.wave += 0.01;
+                if (p.x < -10) p.x = canvas.width + 10;
+                if (p.x > canvas.width + 10) p.x = -10;
+                if (p.y < -10) p.y = canvas.height + 10;
+                if (p.y > canvas.height + 10) p.y = -10;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+            animId = requestAnimationFrame(draw);
+        }
+        draw();
+    })();
+
+    // ===== 精选轮播 =====
+    var SR_SLIDES = [
+        {title:'🌙 星空漫游', sub:'今晚，陪TA看星星', bg:'linear-gradient(135deg, #1a1a3e 0%, #2d1b4e 50%, #4a2c5e 100%)', scene:'campus'},
+        {title:'☕ 咖啡馆初遇', sub:'一杯拿铁的时间，遇见你', bg:'linear-gradient(135deg, #3e2723 0%, #4e342e 50%, #5d4037 100%)', scene:'dating'},
+        {title:'🏖️ 海边篝火', sub:'海浪声里，心跳声更清晰', bg:'linear-gradient(135deg, #1a237e 0%, #283593 50%, #1565c0 100%)', scene:'beach'},
+        {title:'🎪 游园惊梦', sub:'旋转木马上的第一次对视', bg:'linear-gradient(135deg, #4a148c 0%, #6a1b9a 50%, #8e24aa 100%)', scene:'workplace'},
+    ];
+    var srIdx = 0, srTimer = null;
+
+    function renderCarousel() {
+        var el = document.getElementById('srFeatured');
+        if (!el) return;
+        var slidesHTML = SR_SLIDES.map(function(s,i){
+            return '<div class="sr-featured-slide'+(i===srIdx?' active':'')+'" style="background:'+s.bg+';" onclick="window.location.href=\'scene.html\'">'+
+                '<div class="sr-featured-content"><span class="sr-featured-tag">🌟 本月精选</span>'+
+                '<div class="sr-featured-title">'+s.title+'</div>'+
+                '<div class="sr-featured-sub">'+s.sub+'</div></div></div>';
+        }).join('');
+        var dotsHTML = SR_SLIDES.map(function(_,i){
+            return '<span class="sr-dot'+(i===srIdx?' active':'')+'" onclick="srGo('+i+')"></span>';
+        }).join('');
+        el.innerHTML = slidesHTML +
+            '<button class="sr-arrow left" onclick="srPrev()">◀</button>'+
+            '<button class="sr-arrow right" onclick="srNext()">▶</button>'+
+            '<div class="sr-dots" id="srDots">'+dotsHTML+'</div>';
+    }
+
+    function srGo(idx) {
+        srIdx = idx;
+        document.querySelectorAll('.sr-featured-slide').forEach(function(s,i){ s.classList.toggle('active', i===srIdx); });
+        document.querySelectorAll('.sr-dot').forEach(function(d,i){ d.classList.toggle('active', i===srIdx); });
+        resetSrTimer();
+    }
+    window.srPrev = function() { srGo((srIdx - 1 + SR_SLIDES.length) % SR_SLIDES.length); };
+    window.srNext = function() { srGo((srIdx + 1) % SR_SLIDES.length); };
+
+    function resetSrTimer() {
+        clearInterval(srTimer);
+        srTimer = setInterval(function(){ srGo((srIdx + 1) % SR_SLIDES.length); }, 4500);
+    }
+    renderCarousel();
+    resetSrTimer();
+})();
+
+
+// ===== 报纸弹窗 =====
+window.openNewspaper = function() {
+    var overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    overlay.innerHTML =
+        '<div class="newspaper-popup" onclick="event.stopPropagation()">'+
+        '<button class="popup-close" onclick="this.closest(\'.popup-overlay\').remove()">✕</button>'+
+        '<div class="np-header">'+
+        '<div class="np-title">SOCIAL LAB</div>'+
+        '<div class="np-meta"><span>Vol.02</span><span>|</span><span>Iss.07</span><span>|</span><span>2026年6月</span></div>'+
+        '</div>'+
+        '<div class="np-headline">🔥 AI分身算法更新至 v2.5，告别生硬对话</div>'+
+        '<div class="np-columns">'+
+        '<div class="np-col"><h4>优化日志</h4><ul>'+
+        '<li>🛠️ 修复：匹配时卡顿问题</li>'+
+        '<li>✨ 新增：好感度实时反馈</li>'+
+        '<li>📈 优化：场景加载速度提升40%</li>'+
+        '<li>🔧 修正：对话位置显示错误</li>'+
+        '</ul></div>'+
+        '<div class="np-col"><h4>研发动态</h4><ul>'+
+        '<li>🚧 <b>v3.0 内测中</b></li>'+
+        '<li>动态约会剧本生成</li>'+
+        '<li>多人社交场景原型</li>'+
+        '<li>AR虚拟形象接入</li>'+
+        '</ul></div>'+
+        '</div>'+
+        '<div class="np-footer">'+
+        '📮 期待你的反馈 '+
+        '<input type="email" placeholder="输入邮箱申请内测" style="margin:8px 0;width:240px;"> '+
+        '<button onclick="alert(\'已提交！我们会尽快联系你。\')">申请内测</button>'+
+        '</div></div>';
+    document.body.appendChild(overlay);
+    requestAnimationFrame(function() { overlay.classList.add('active'); });
+};
+
+// ===== 杂志弹窗 =====
+// ===== 故事数据库 =====
+var MAG_STORIES = [
+    {
+        id:1, icon:'💕', title:'在 Social 的第 14 天，我遇到了另一个自己',
+        desc:'从不敢约会到鼓起勇气见面，数字人帮我迈出了第一步',
+        author:'匿名用户', date:'2026年6月8日', mood:'romance',
+        heroBg:'linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #fdf4f4 100%)',
+        text:'<p>我以前一直不敢在现实里约会。每次见面之前都会焦虑到失眠——害怕冷场、害怕对方失望、害怕自己不够好。</p><p>直到朋友推荐我试了 Social。我先捏了一个跟我很像的数字人，上传了一些聊天记录，它竟然学到了我说话的节奏和习惯。</p><p>第一次虚拟约会是在校园空间。对方是一个爱摄影的程序员，我们在图书馆聊了整整十二轮。数字人替我说出了那些我平时不敢说的话，而对方的回应也让我一点点放下防备。</p><p>两周后我见了 TA 本人。在咖啡馆碰面时，我们竟然同时笑出声——因为两个人都觉得"好像已经认识很久了"。</p><p>感谢 Social，让我先用心去认识一个人，再用眼睛去确认。💕</p>'
+    },
+    {
+        id:2, icon:'🌈', title:'同一场大雨，两个不同的人',
+        desc:'风暴空间让我们在危机中看到了彼此最真实的样子',
+        author:'小陈', date:'2026年6月3日', mood:'adventure',
+        heroBg:'linear-gradient(135deg, #e8eaf6 0%, #c5cae9 50%, #e3f2fd 100%)',
+        text:'<p>说实话，我选风暴空间纯粹是好奇。谁会想在暴风雨中约会啊？</p><p>结果发现这正是我需要的。停电的图书馆里，我们只能用手机照明。她说她怕黑，我说"那你抓住我的手吧"——这句话在正常约会里我绝对说不出口。</p><p>后来的航班延误、深夜拼车、在便利店躲雨，每一次意外都像在考验我们的默契。而我们都及格了。</p><p>现在回想起来，那些手忙脚乱反而成了最好的回忆。风暴过后才能看见彩虹，不是吗？</p>'
+    },
+    {
+        id:3, icon:'🌙', title:'我在他的匹配报告里看见了自己',
+        desc:'AI生成的好感度分析，竟然比我自己还了解我',
+        author:'月亮不睡我不睡', date:'2026年5月28日', mood:'insight',
+        heroBg:'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 50%, #fdf4f4 100%)',
+        text:'<p>做完匹配的时候我没抱太大期望。毕竟只是个算法，能准到哪去？</p><p>但那份报告里的"情绪兼容度 90 分"让我愣了一下。AI 分析说"你的乐观积极与对方的理性冷静形成了良好互补"——这简直是在说我和前任分手的原因（笑），只不过这次 AI 告诉我这是好事。</p><p>最让我感动的是报告里写的："建议你多分享日常小事，不要只聊大事和观点。对方的温暖回应会让你发现，平淡里也有浪漫。"</p><p>我试了。分享了我家窗外的那棵银杏树。他回了我一张他出差时拍的银杏，说"我公司楼下也有，每次经过都想起你。"</p><p>那一刻我知道，这个 AI 是真的在帮我寻找爱。</p>'
+    },
+];
+
+// ===== 动态周数 =====
+(function setWeekBadge() {
+    var now = new Date();
+    var start = new Date(now.getFullYear(), 0, 1);
+    var week = Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
+    var badge = document.getElementById('weekBadge');
+    if (badge) badge.textContent = '📅 Week' + week;
+})();
+
+// ===== 杂志弹窗（首页列表 + 详情切换） =====
+window.openMagazine = function() {
+    var overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    overlay.id = 'magOverlay';
+
+    function renderHome() {
+        var popup = overlay.querySelector('.magazine-popup');
+        if (!popup) return;
+        var itemsHTML = MAG_STORIES.map(function(s) {
+            return '<div class="mag-item" onclick="openStoryDetail('+s.id+')">'+
+                '<div class="mag-item-icon">'+s.icon+'</div>'+
+                '<div class="mag-item-info"><div class="mag-item-title">'+s.title+'</div><div class="mag-item-desc">'+s.desc+'</div></div>'+
+                '<span class="mag-item-arrow">›</span></div>';
+        }).join('');
+
+        popup.innerHTML =
+            '<button class="popup-close" onclick="this.closest(\'.popup-overlay\').remove()">✕</button>'+
+            '<div class="mag-hero">'+
+            '<img src="images/hero.jpg" alt="心动回响" onerror="this.style.display=\'none\'">'+
+            '<div class="mag-hero-gradient"></div>'+
+            '<div class="mag-hero-overlay"><span class="mag-tag">每周精选</span><div class="mag-hero-title">心动回响</div></div>'+
+            '</div>'+
+            '<div class="mag-body">'+
+            '<div class="mag-section-title">本周故事</div>'+
+            '<div class="mag-list">'+itemsHTML+'</div>'+
+            '<div style="text-align:center;margin-top:20px;font-size:11px;color:#bbb;">📮 每周精选优质用户故事，上榜即有机会获得限定头像框</div>'+
+            '</div>';
+    }
+
+    overlay.innerHTML = '<div class="magazine-popup" onclick="event.stopPropagation()"></div>';
+    document.body.appendChild(overlay);
+    renderHome();
+    requestAnimationFrame(function() { overlay.classList.add('active'); });
+
+    // 把 openStoryDetail 挂到 window 上（处理闭包内的 overlay 引用）
+    window._magOverlay = overlay;
+};
+
+// ===== 故事详情（从列表点击进入） =====
+window.openStoryDetail = function(storyId) {
+    var overlay = window._magOverlay;
+    if (!overlay) return;
+    var s = MAG_STORIES.find(function(st){ return st.id === storyId; });
+    if (!s) return;
+
+    var popup = overlay.querySelector('.magazine-popup');
+    popup.innerHTML =
+        '<button class="popup-close" onclick="this.closest(\'.popup-overlay\').remove()">✕</button>'+
+        '<button class="mag-back" onclick="openMagazineHome()">← 返回列表</button>'+
+        '<div class="mag-hero" style="background:'+s.heroBg+';">'+
+        '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:60px;">'+s.icon+'</div>'+
+        '</div>'+
+        '<div class="mag-body">'+
+        '<div class="mag-title">'+s.title+'</div>'+
+        '<div class="mag-author"><span>'+s.author+'</span><span class="mag-author-dot"></span><span>'+s.date+'</span></div>'+
+        '<div class="mag-text">'+s.text+'</div>'+
+        '<div class="mag-actions">'+
+        '<button class="mag-btn mag-btn-like" onclick="alert(\'💌 点赞成功！\')">💌 为TA点赞</button>'+
+        '<button class="mag-btn mag-btn-share" onclick="alert(\'感谢投稿！请将你的故事发送到 stories@social.app\')">✉️ 分享你的故事</button>'+
+        '</div></div>';
+    popup.scrollTop = 0;
+};
+
+// ===== 返回杂志首页 =====
+window.openMagazineHome = function() {
+    var overlay = window._magOverlay;
+    if (!overlay) return;
+    // Re-render the home view
+    var popup = overlay.querySelector('.magazine-popup');
+    var itemsHTML = MAG_STORIES.map(function(s) {
+        return '<div class="mag-item" onclick="openStoryDetail('+s.id+')">'+
+            '<div class="mag-item-icon">'+s.icon+'</div>'+
+            '<div class="mag-item-info"><div class="mag-item-title">'+s.title+'</div><div class="mag-item-desc">'+s.desc+'</div></div>'+
+            '<span class="mag-item-arrow">›</span></div>';
+    }).join('');
+    popup.innerHTML =
+        '<button class="popup-close" onclick="this.closest(\'.popup-overlay\').remove()">✕</button>'+
+        '<div class="mag-hero">'+
+        '<img src="images/hero.jpg" alt="心动回响" onerror="this.style.display=\'none\'">'+
+        '<div class="mag-hero-gradient"></div>'+
+        '<div class="mag-hero-overlay"><span class="mag-tag">每周精选</span><div class="mag-hero-title">心动回响</div></div>'+
+        '</div>'+
+        '<div class="mag-body">'+
+        '<div class="mag-section-title">本周故事</div>'+
+        '<div class="mag-list">'+itemsHTML+'</div>'+
+        '<div style="text-align:center;margin-top:20px;font-size:11px;color:#bbb;">📮 每周精选优质用户故事，上榜即有机会获得限定头像框</div>'+
+        '</div>';
+    popup.scrollTop = 0;
+};
+
+console.log('💕 Social 主页已就绪');
+
+// ===== 约会前置校验 =====
+window.checkMatchAndGo = function() {
+    var mp = null;
+    try { mp = JSON.parse(localStorage.getItem('social_match_persona')||'null'); } catch(e){}
+    if (mp && mp.name) {
+        window.location.href = '/scene.html';
+    } else {
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;';
+        overlay.onclick = function(e){if(e.target===overlay)overlay.remove();};
+        overlay.innerHTML = '<div style="background:#fff;border-radius:20px;padding:32px;text-align:center;width:min(380px,90vw);box-shadow:0 16px 48px rgba(0,0,0,0.1);" onclick="event.stopPropagation()"><div style="font-size:48px;margin-bottom:12px;">💡</div><div style="font-size:15px;color:#2D1B2E;line-height:1.6;margin-bottom:20px;">先匹配一位心动的 TA 吧！<br>去心动信号站寻找你的缘分</div><button onclick="window.scrollTo({top:document.querySelector(\'.signal-station\').offsetTop-80,behavior:\'smooth\'});this.closest(\'div[style*=fixed]\').remove();" style="padding:10px 24px;border-radius:22px;background:linear-gradient(135deg,#FF6B9D,#D6336C);color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;">去匹配 →</button></div>';
+        document.body.appendChild(overlay);
+    }
+};
+
+// ===== Hero按钮：滚动到主模块区 =====
+function scrollToModules() {
+    var target = document.querySelector('.main-modules');
+    if (target) {
+        target.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+}
+
+// ===== 匹配报告动态填充 =====
+(function initReport() {
+    var el = document.getElementById('reportContent');
+    if (!el) return;
+    var matchPersona = null;
+    try { matchPersona = JSON.parse(localStorage.getItem('social_match_persona') || 'null'); } catch(e) {}
+    var myPersona = null;
+    try { myPersona = JSON.parse(localStorage.getItem('social_my_persona') || 'null'); } catch(e) {}
+
+    if (matchPersona) {
+        var score = Math.floor(78 + Math.random() * 15);
+        var matchName = matchPersona.name || 'TA';
+        el.innerHTML =
+            '<div style="display:flex;align-items:center;gap:24px;">'+
+            '<div style="text-align:center;">'+
+            '<div class="report-score">'+score+'%</div>'+
+            '<div class="report-score-label">综合匹配度</div>'+
+            '</div>'+
+            '<div style="flex:1;">'+
+            '<div style="margin-bottom:8px;">与 <b>'+matchName+'</b> 的契合度分析：</div>'+
+            '<div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">'+
+            (myPersona ? '你的性格「'+(myPersona.personality||'').split('·')[0]+'」与对方的风格形成了互补。' : '')+
+            '建议尝试约会场景来进一步了解彼此。<br>'+
+            '<a href="/report.html" style="color:#D6336C;font-weight:600;">查看完整报告 →</a>'+
+            '</div></div></div>';
+
+        // 更新AI洞察
+        var insight = document.getElementById('aiInsightText');
+        if (insight && myPersona) {
+            var scenes = ['星空漫游','咖啡馆初遇','海边篝火','游园惊梦'];
+            var s = scenes[Math.floor(Math.random()*scenes.length)];
+            insight.textContent = '你最近对「'+matchName+'」产生了匹配。数据显示你们在「'+s+'」场景中可能有较高的互动火花。';
+        }
+    } else {
+        el.innerHTML = '<div style="text-align:center;padding:30px;color:#b0a0a5;">'+
+            '<div style="font-size:36px;margin-bottom:10px;">📊</div>'+
+            '<div>还没有匹配数据</div>'+
+            '<div style="font-size:12px;">去心动信号站开始匹配吧</div>'+
+            '<a href="/report.html" style="display:inline-block;margin-top:14px;color:#D6336C;font-size:13px;">查看历史报告 →</a></div>';
+    }
+})();
+
+// ===== 心动备忘录 =====
+function toggleDiaryInput() {
+    var note = document.getElementById('myNote');
+    note.focus();
+}
+function saveDiaryNote() {
+    var note = document.getElementById('myNote').innerText;
+    var discovery = document.getElementById('discoveryNote').innerText;
+    localStorage.setItem('social_diary', JSON.stringify({note:note, discovery:discovery, time:Date.now()}));
+    updateDiaryKeywords();
+}
+
+function updateDiaryKeywords() {
+    var text = (document.getElementById('myNote').innerText + ' ' + document.getElementById('discoveryNote').innerText).toLowerCase();
+    var allTags = ['#主动','#感受派','#浪漫主义','#安静','#冒险','#社恐','#好奇','#文艺','#理性','#感性','#慢热','#直球'];
+    var matched = allTags.filter(function(t){ return text.indexOf(t.replace('#','')) >= 0; });
+    if (matched.length === 0) matched = ['#主动','#感受派','#浪漫主义'];
+    var kw = document.getElementById('diaryKeywords');
+    if (kw) kw.innerHTML = matched.map(function(t){ return '<span class="dk-tag">'+t+'</span>'; }).join('');
+}
+
+// 恢复日记
+(function initDiary() {
+    var raw = localStorage.getItem('social_diary');
+    if (!raw) return;
+    try {
+        var d = JSON.parse(raw);
+        if (d.note) document.getElementById('myNote').innerText = d.note;
+        if (d.discovery) document.getElementById('discoveryNote').innerText = d.discovery;
+        updateDiaryKeywords();
+    } catch(e) {}
+})();
+
+// ===== 逐字渐变打字动画 =====
+function typeText(el, text) {
+    if (!el) return;
+    el.innerHTML = '';
+    el.style.display = 'inline-block';
+    for (var i = 0; i < text.length; i++) {
+        var span = document.createElement('span');
+        span.className = 'char';
+        span.textContent = text[i];
+        span.style.animationDelay = (i * 0.12) + 's';
+        // 每个字颜色渐变：从浅到深
+        var ratio = i / (text.length - 1);
+        var r = Math.round(180 + ratio * 40);  // 180→220
+        var g = Math.round(100 + ratio * 60);  // 100→160
+        var b = Math.round(120 + ratio * 50);  // 120→170
+        span.style.background = 'linear-gradient(135deg, #c97c87, #e8a0a8)';
+        span.style.webkitBackgroundClip = 'text';
+        span.style.webkitTextFillColor = 'transparent';
+        span.style.backgroundClip = 'text';
+        el.appendChild(span);
+    }
+}
+
+// 导航栏logo + 中心logo逐字打字
+(function(){
+    var navEl = document.getElementById('navLogoText');
+    var heroEl = document.getElementById('heroLogo');
+    // Logo图片加载失败时显示打字动画
+    var logoImg = document.querySelector('.nav-logo-img');
+    if (logoImg) {
+        logoImg.addEventListener('error', function() {
+            typeText(navEl, 'Social');
+        });
+    }
+    // 中心logo：延迟600ms确保CSS就绪后逐字出现
+    if (heroEl) {
+        setTimeout(function() {
+            typeText(heroEl, 'Social');
+        }, 600);
+    }
+})();
+</script>
+</body>
+</html>

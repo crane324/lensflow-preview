@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>约会场景 - Social</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+:root { --pink:#FF6B9D; --pink-deep:#D6336C; --bg:#fdf4f4; --card:#fff; --text:#2D1B2E; --text-secondary:rgba(50,30,40,0.6); --nav-bg:#ECDDC8; --border:rgba(201,124,135,0.12); }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); font-family:'Inter','PingFang SC',-apple-system,sans-serif; color:var(--text); -webkit-font-smoothing:antialiased; min-height:100vh; }
+
+.navbar { position:fixed; top:0; left:0; right:0; z-index:100; background:var(--nav-bg); display:flex; align-items:center; justify-content:space-between; padding:0 32px; height:56px; border-bottom:1px solid rgba(0,0,0,0.04); }
+.nav-logo { font-size:20px; font-weight:700; background:linear-gradient(135deg,#D6336C,#FF6B9D); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-decoration:none; }
+.nav-links { display:flex; gap:28px; }
+.nav-link { color:#fff; text-decoration:none; font-size:14px; text-shadow:0 1px 2px rgba(0,0,0,0.08); font-family:'Noto Serif SC',serif; }
+
+.main-container { max-width:900px; margin:0 auto; padding:80px 24px 60px; }
+
+/* 大场景卡片 */
+.scene-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
+.scene-big-card {
+    position:relative; border-radius:20px; padding:28px; cursor:pointer;
+    border:2px solid var(--border); transition:all 0.35s;
+    overflow:hidden; min-height:160px;
+}
+.scene-big-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,0.06); }
+.scene-big-card.selected { border-color:var(--pink-deep); box-shadow:0 0 0 3px rgba(255,107,157,0.15); }
+.scene-bg-campus { background:linear-gradient(135deg, #fce4ec 0%, #f8bbd0 30%, #fff9c4 70%, #fdf4f4 100%); }
+.scene-bg-workplace { background:linear-gradient(135deg, #e8eaf6 0%, #c5cae9 30%, #e3f2fd 70%, #fdf4f4 100%); }
+.scene-bg-dating { background:linear-gradient(135deg, #fce4ec 0%, #ffe0b2 40%, #fff8e1 70%, #fdf4f4 100%); }
+.scene-bg-storm { background:linear-gradient(135deg, #263238 0%, #37474f 30%, #546e7a 70%, #fdf4f4 100%); color:#fff; }
+.scene-icon { font-size:44px; margin-bottom:10px; display:block; }
+.scene-name { font-size:20px; font-weight:700; margin-bottom:4px; }
+.scene-desc { font-size:13px; opacity:0.7; line-height:1.5; }
+.scene-bg-storm .scene-name,.scene-bg-storm .scene-desc { color:#fff; }
+
+/* 小场景展开区 */
+.sub-scenes-panel {
+    display:none; background:var(--card); border-radius:18px;
+    padding:24px; margin-bottom:24px;
+    border:1px solid var(--border); box-shadow:0 4px 16px rgba(0,0,0,0.03);
+}
+.sub-scenes-panel.visible { display:block; }
+.sub-scenes-title { font-size:16px; font-weight:700; color:var(--text); margin-bottom:14px; }
+.sub-scene-item {
+    display:flex; align-items:center; gap:10px; padding:10px 14px;
+    border:1.5px solid var(--border); border-radius:12px; cursor:pointer;
+    margin-bottom:8px; transition:all 0.2s;
+}
+.sub-scene-item:hover { border-color:var(--pink); }
+.sub-scene-item.checked { border-color:var(--pink-deep); background:rgba(255,107,157,0.04); }
+.pixel-checkbox {
+    width:20px; height:20px; border:2px solid #c497a8; border-radius:2px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    font-size:12px; color:transparent; transition:all 0.2s;
+}
+.sub-scene-item.checked .pixel-checkbox { background:var(--pink-deep); border-color:var(--pink-deep); color:#fff; }
+.custom-input-row { display:flex; gap:8px; margin-top:10px; }
+.custom-input-row input {
+    flex:1; padding:10px 14px; border:1.5px dashed var(--border); border-radius:12px;
+    font-size:13px; font-family:inherit; outline:none;
+}
+.custom-input-row input:focus { border-color:var(--pink); }
+.custom-input-row button {
+    padding:10px 18px; border-radius:12px; background:var(--pink-deep);
+    color:#fff; border:none; cursor:pointer; font-family:inherit; font-size:13px;
+}
+
+/* 协商区 */
+.negotiation-panel {
+    display:none; background:var(--card); border-radius:18px;
+    padding:24px; margin-bottom:24px;
+    border:1px solid var(--border); box-shadow:0 4px 16px rgba(0,0,0,0.03);
+}
+.negotiation-panel.visible { display:block; }
+.negotiation-title { font-size:16px; font-weight:700; color:var(--text); margin-bottom:16px; }
+.chat-bubble {
+    max-width:80%; padding:12px 16px; border-radius:16px;
+    font-size:13px; line-height:1.5; margin-bottom:10px;
+}
+.chat-bubble.me {
+    background:rgba(255,107,157,0.1); border:1px solid rgba(255,107,157,0.15);
+    margin-left:auto; border-bottom-right-radius:4px;
+}
+.chat-bubble.ta {
+    background:var(--bg); border:1px solid var(--border);
+    margin-right:auto; border-bottom-left-radius:4px;
+}
+.chat-bubble.system {
+    text-align:center; background:rgba(255,107,157,0.04); color:#D6336C;
+    max-width:100%; font-size:12px;
+}
+.nego-actions { display:flex; gap:10px; margin-top:12px; justify-content:center; }
+.nego-btn {
+    padding:10px 24px; border-radius:22px; font-size:14px; font-weight:600;
+    cursor:pointer; font-family:inherit; border:none; transition:all 0.2s;
+}
+.nego-btn.accept { background:linear-gradient(135deg,#FF6B9D,#D6336C); color:#fff; }
+.nego-btn.accept:hover { transform:translateY(-1px); }
+.nego-btn.swap { background:transparent; border:1.5px solid rgba(201,124,135,0.2); color:var(--text-secondary); }
+.nego-btn.swap:hover { border-color:#D6336C; }
+
+.couple-display { display:flex; align-items:center; gap:12px; justify-content:center; margin-bottom:16px; font-size:14px; }
+.loading-dots { display:inline-flex; gap:4px; }
+.loading-dots span { width:6px; height:6px; border-radius:50%; background:#D6336C; animation:dotBounce 1.4s infinite; }
+.loading-dots span:nth-child(2){animation-delay:0.2s;}.loading-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes dotBounce { 0%,80%,100%{transform:scale(0);opacity:0.3;} 40%{transform:scale(1);opacity:1;} }
+
+.btn { padding:10px 24px; border-radius:22px; font-size:14px; font-weight:600; cursor:pointer; border:none; font-family:inherit; transition:all 0.2s; }
+.btn-primary { background:linear-gradient(135deg,#FF6B9D,#D6336C); color:#fff; }
+.btn-outline { background:transparent; border:1.5px solid rgba(201,124,135,0.2); color:var(--text-secondary); }
+.btn-outline:hover { border-color:#D6336C; }
+
+.alert-overlay {
+    position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.4);
+    display:flex; align-items:center; justify-content:center;
+}
+.alert-box {
+    background:#fff; border-radius:20px; padding:32px; text-align:center;
+    width:min(380px,90vw); box-shadow:0 16px 48px rgba(0,0,0,0.1);
+}
+.alert-icon { font-size:48px; margin-bottom:12px; }
+.alert-text { font-size:15px; color:var(--text); line-height:1.6; margin-bottom:20px; }
+
+@media (max-width:640px) { .scene-grid { grid-template-columns:1fr; } .navbar { padding:0 16px; } }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="/" class="nav-logo">Social</a>
+    <div class="nav-links">
+        <a href="/" class="nav-link">首页</a>
+        <a href="/workshop.html" class="nav-link">捏个分身</a>
+        <a href="javascript:checkMatchAndGo()" class="nav-link">开始约会</a>
+        <a href="/report.html" class="nav-link">看看缘分</a>
+    </div>
+</nav>
+
+<div class="main-container" id="app">
+
+    <!-- ====== 页面标题 ====== -->
+    <div style="text-align:center;margin-bottom:32px;">
+        <h1 style="font-size:28px;font-weight:700;">🌍 选择约会场景</h1>
+        <p style="font-size:14px;color:var(--text-secondary);margin-top:4px;" id="matchInfo">加载中...</p>
+    </div>
+
+    <!-- ====== 大场景 ====== -->
+    <div class="scene-grid" id="sceneGrid">
+        <div class="scene-big-card scene-bg-campus" data-scene="campus" onclick="selectBigScene(this)">
+            <span class="scene-icon">🏫</span>
+            <div class="scene-name">校园空间</div>
+            <div class="scene-desc">图书馆午后、樱花树下、社团活动</div>
+        </div>
+        <div class="scene-big-card scene-bg-workplace" data-scene="workplace" onclick="selectBigScene(this)">
+            <span class="scene-icon">🏢</span>
+            <div class="scene-name">职场空间</div>
+            <div class="scene-desc">茶水间闲聊、并肩奋斗、午夜加班</div>
+        </div>
+        <div class="scene-big-card scene-bg-dating" data-scene="dating" onclick="selectBigScene(this)">
+            <span class="scene-icon">🕯️</span>
+            <div class="scene-name">约会空间</div>
+            <div class="scene-desc">烛光晚餐、城市夜景、天台微醺</div>
+        </div>
+        <div class="scene-big-card scene-bg-storm" data-scene="storm" onclick="selectBigScene(this)">
+            <span class="scene-icon">⛈️</span>
+            <div class="scene-name">风暴空间</div>
+            <div class="scene-desc">暴风雨中、停电之夜、航班延误</div>
+        </div>
+    </div>
+
+    <!-- ====== 小场景区 ====== -->
+    <div class="sub-scenes-panel" id="subScenesPanel">
+        <div class="sub-scenes-title" id="subScenesTitle">选择小场景</div>
+        <div id="subScenesList"></div>
+        <div class="custom-input-row">
+            <input type="text" id="customSceneInput" placeholder="自定义场景...">
+            <button onclick="addCustomScene()">+ 添加</button>
+        </div>
+        <div style="margin-top:16px;text-align:right;">
+            <button class="btn btn-primary" onclick="inviteMatch()">💌 邀请 TA</button>
+        </div>
+    </div>
+
+    <!-- ====== 协商区 ====== -->
+    <div class="negotiation-panel" id="negoPanel">
+        <div class="negotiation-title">💬 场景协商</div>
+        <div class="couple-display">
+            <span id="negoMyName">我</span> 💗 <span id="negoTaName">TA</span>
+        </div>
+        <div id="negoChat"></div>
+        <div class="nego-actions" id="negoActions"></div>
+    </div>
+</div>
+
+<script>
+var DEEPSEEK_KEY = 'sk-your-api-key-here';
+var DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
+
+var matchPersona = null, myPersona = null;
+try { matchPersona = JSON.parse(localStorage.getItem('social_match_persona')||'null'); } catch(e){}
+try { myPersona = JSON.parse(localStorage.getItem('social_my_persona')||'null'); } catch(e){}
+var selectedBigScene = null, selectedSubScene = null, customScenes = [];
+var negoRound = 0, maxNegoRounds = 2;
+var negoHistory = [];
+
+// ===== 前置校验 =====
+window.checkMatchAndGo = function() {
+    if (matchPersona && matchPersona.name) {
+        window.location.href = '/scene.html';
+    } else {
+        var overlay = document.createElement('div');
+        overlay.className = 'alert-overlay';
+        overlay.innerHTML = '<div class="alert-box"><div class="alert-icon">💡</div><div class="alert-text">先匹配一位心动的 TA 吧！<br>去心动信号站寻找你的缘分</div><button class="btn btn-primary" onclick="window.location.href=\'/\'">去匹配 →</button></div>';
+        overlay.onclick = function(e){if(e.target===overlay)overlay.remove();};
+        document.body.appendChild(overlay);
+    }
+};
+
+// ===== 初始化 =====
+(function init() {
+    if (matchPersona) {
+        document.getElementById('matchInfo').textContent = '与 '+(matchPersona.name||'TA')+' 的约会 · 选择一个场景开始吧';
+    } else {
+        document.getElementById('matchInfo').textContent = '选择一个场景开始约会';
+    }
+})();
+
+// ===== AI 生成小场景 =====
+var subSceneDB = {
+    campus: ['📚 图书馆邂逅','🌸 樱花树下散步','🎵 社团音乐角','🍱 食堂午餐偶遇'],
+    workplace: ['☕ 茶水间闲聊','💼 会议室合作','🌃 加班夜互相打气','📊 项目攻坚午餐'],
+    dating: ['🕯️ 烛光晚餐','🍷 红酒品鉴之夜','🎤 脱口秀现场','🌃 天台城市夜景'],
+    storm: ['🌧️ 暴风雨中撑伞','🔦 停电之夜的故事','✈️ 航班延误的候机厅','🏚️ 暴雨中的安全屋'],
+};
+
+function selectBigScene(el) {
+    document.querySelectorAll('.scene-big-card').forEach(function(c){c.classList.remove('selected');});
+    el.classList.add('selected');
+    selectedBigScene = el.dataset.scene;
+    customScenes = [];
+    document.getElementById('customSceneInput').value = '';
+
+    // 显示小场景
+    var panel = document.getElementById('subScenesPanel');
+    var title = document.getElementById('subScenesTitle');
+    var list = document.getElementById('subScenesList');
+    panel.classList.add('visible');
+    title.textContent = '选择小场景 — ' + el.querySelector('.scene-name').textContent;
+
+    var preset = subSceneDB[selectedBigScene] || [];
+    list.innerHTML = preset.map(function(s){
+        return '<div class="sub-scene-item" onclick="toggleSubScene(this)" data-scene="'+s+'">'+
+            '<span class="pixel-checkbox">✓</span><span>'+s+'</span></div>';
+    }).join('');
+    selectedSubScene = null;
+
+    // 滚动到小场景区
+    panel.scrollIntoView({behavior:'smooth'});
+}
+
+function toggleSubScene(el) {
+    document.querySelectorAll('.sub-scene-item').forEach(function(i){i.classList.remove('checked');});
+    el.classList.add('checked');
+    selectedSubScene = el.dataset.scene;
+}
+
+function addCustomScene() {
+    var input = document.getElementById('customSceneInput');
+    var val = input.value.trim();
+    if (!val) return;
+    customScenes.push(val);
+    var list = document.getElementById('subScenesList');
+    var div = document.createElement('div');
+    div.className = 'sub-scene-item checked';
+    div.innerHTML = '<span class="pixel-checkbox">✓</span><span>✏️ '+val+'</span>';
+    div.onclick = function(){toggleSubScene(this);selectedSubScene = '✏️ '+val;};
+    list.appendChild(div);
+    selectedSubScene = '✏️ '+val;
+    input.value = '';
+    // 取消其他选中
+    document.querySelectorAll('.sub-scene-item').forEach(function(i){i.classList.remove('checked');});
+    div.classList.add('checked');
+}
+
+// ===== 协商流程 =====
+function inviteMatch() {
+    if (!selectedBigScene) { alert('请先选择一个大场景'); return; }
+    if (!selectedSubScene) { alert('请选择或输入一个小场景'); return; }
+
+    negoRound = 0; negoHistory = [];
+    var panel = document.getElementById('negoPanel');
+    var chat = document.getElementById('negoChat');
+    panel.classList.add('visible');
+    document.getElementById('negoMyName').textContent = myPersona?myPersona.name:'我';
+    document.getElementById('negoTaName').textContent = matchPersona?matchPersona.name:'TA';
+
+    chat.innerHTML = '';
+    negoHistory = [];
+    addNegoMsg('system', '📨 你向 '+(matchPersona?matchPersona.name:'TA')+' 发送了约会邀请');
+    addNegoMsg('me', '「'+selectedSubScene+'」想去吗？');
+
+    // 模拟对方回应（1.5秒后）
+    setTimeout(function(){
+        var accepted = Math.random() > 0.35;
+        if (accepted) {
+            addNegoMsg('ta', '好呀！「'+selectedSubScene+'」听起来很棒！✅');
+            showNegoActions('accepted');
+        } else {
+            negoRound++;
+            addNegoMsg('ta', '「'+selectedSubScene+'」不太合适...要不要试试这个？🔄');
+            // AI推荐替代方案
+            var alt = getAlternativeScene();
+            addNegoMsg('ta', '我推荐：「'+alt+'」怎么样？');
+            showNegoActions('swapped', alt);
+        }
+    }, 1500);
+    panel.scrollIntoView({behavior:'smooth'});
+}
+
+function getAlternativeScene() {
+    var allPresets = subSceneDB[selectedBigScene] || [];
+    var filtered = allPresets.filter(function(s){return s !== selectedSubScene && customScenes.indexOf(s)<0;});
+    if (filtered.length === 0) filtered = ['☕ 咖啡馆随意聊','🌿 公园散步'];
+    return filtered[Math.floor(Math.random()*filtered.length)];
+}
+
+function addNegoMsg(type, text) {
+    var chat = document.getElementById('negoChat');
+    var div = document.createElement('div');
+    div.className = 'chat-bubble ' + type;
+    div.textContent = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function showNegoActions(state, altScene) {
+    var actions = document.getElementById('negoActions');
+    if (state === 'accepted') {
+        actions.innerHTML = '<button class="nego-btn accept" onclick="startDate()">✅ 开始约会</button>';
+    } else if (state === 'swapped' && negoRound < maxNegoRounds) {
+        actions.innerHTML =
+            '<button class="nego-btn accept" onclick="acceptAlt(\''+(altScene||'').replace(/'/g,"\\'")+'\')">✅ 接受这个</button>'+
+            '<button class="nego-btn swap" onclick="counterPropose()">🔄 我再想想</button>';
+    } else {
+        // 超过轮次，强制折中
+        var forced = subSceneDB[selectedBigScene]?subSceneDB[selectedBigScene][0]:'☕ 咖啡馆初遇';
+        addNegoMsg('system', '⏰ 协商轮次已满，系统推荐折中方案：「'+forced+'」');
+        actions.innerHTML = '<button class="nego-btn accept" onclick="selectedSubScene=\''+forced.replace(/'/g,"\\'")+'\';startDate();">✅ 开始约会</button>';
+    }
+}
+
+function acceptAlt(scene) {
+    selectedSubScene = scene;
+    addNegoMsg('me', '好的！「'+scene+'」就这个吧 ✅');
+    document.getElementById('negoActions').innerHTML = '<button class="nego-btn accept" onclick="startDate()">✅ 开始约会</button>';
+}
+
+function counterPropose() {
+    if (negoRound >= maxNegoRounds) return;
+    negoRound++;
+    var alt = getAlternativeScene();
+    addNegoMsg('me', '我想试试「'+alt+'」怎么样？');
+    setTimeout(function(){
+        var accepted = negoRound >= maxNegoRounds || Math.random() > 0.3;
+        if (accepted) {
+            selectedSubScene = alt;
+            addNegoMsg('ta', '好吧！「'+alt+'」也行 ✅');
+            document.getElementById('negoActions').innerHTML = '<button class="nego-btn accept" onclick="startDate()">✅ 开始约会</button>';
+        } else {
+            addNegoMsg('ta', '还是不太对...要不再看看？');
+            var alt2 = getAlternativeScene();
+            addNegoMsg('ta', '最后一个提议：「'+alt2+'」？');
+            document.getElementById('negoActions').innerHTML =
+                '<button class="nego-btn accept" onclick="acceptAlt(\''+alt2.replace(/'/g,"\\'")+'\')">✅ 接受</button>'+
+                (negoRound < maxNegoRounds ? '<button class="nego-btn swap" onclick="counterPropose()">🔄 再换</button>' : '');
+        }
+    }, 1200);
+}
+
+function startDate() {
+    // 保存场景选择
+    localStorage.setItem('social_selected_scene', JSON.stringify({
+        big: selectedBigScene,
+        sub: selectedSubScene,
+        time: new Date().toISOString()
+    }));
+    window.location.href = 'dating.html?scene=' + selectedBigScene + '&sub=' + encodeURIComponent(selectedSubScene||'');
+}
+
+console.log('🌍 场景选择 · 前置校验 · AI生成 · 协商流程');
+</script>
+</body>
+</html>
