@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💕 恋爱模拟器 - GalGame Demo</title>
+    <!-- 配置文件必须先加载 -->
+    <script>
+        // 内联配置，确保立即可用
+        // test
+        const CDN_BASE_URL = 'https://cdn.jsdelivr.net/gh/halfmadnya/ST-GalGame@main/';
+        // 强制使用CDN（除非在生产环境的服务器上）
+        const isProduction = window.location.hostname !== 'localhost' &&
+                            window.location.hostname !== '127.0.0.1' &&
+                            window.location.protocol !== 'file:';
+        const BASE_URL = isProduction ? './' : CDN_BASE_URL;
+        
+        window.GameConfig = {
+            BASE_URL: BASE_URL,
+            CDN_BASE_URL: CDN_BASE_URL,
+            isLocalFile: !isProduction,
+            isProduction: isProduction,
+            getPath: function(relativePath) {
+                return BASE_URL + relativePath;
+            },
+            getModulePath: function(modulePath) {
+                return BASE_URL + modulePath;
+            },
+            getConfigPath: function(configPath) {
+                return BASE_URL + configPath;
+            },
+            getStylePath: function(stylePath) {
+                return BASE_URL + stylePath;
+            }
+        };
+        
+        console.log('[Config] Base URL:', BASE_URL);
+        console.log('[Config] Is Production:', isProduction);
+        console.log('[Config] Hostname:', window.location.hostname);
+        console.log('[Config] Protocol:', window.location.protocol);
+        
+        // 动态加载CSS
+        (function() {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = window.GameConfig.getStylePath('assets/styles/galgame.css');
+            document.head.appendChild(link);
+        })();
+    </script>
+</head>
+<body>
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>💕 恋爱模拟器</h2>
+            <p>正在初始化游戏系统...</p>
+            <div class="loading-progress">
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏主界面容器，将由GameView.js填充 -->
+    <div id="game-root"></div>
+
+    <!-- 错误显示容器 -->
+    <div id="error-container" class="error-container hidden">
+        <div class="error-content">
+            <h2>🚫 游戏启动失败</h2>
+            <p id="error-message"></p>
+            <div class="error-details">
+                <p>请确保：</p>
+                <ul>
+                    <li>在正确的iframe环境中运行</li>
+                    <li>小白X插件已正确加载</li>
+                    <li>callGenerate函数可用</li>
+                </ul>
+            </div>
+            <button onclick="location.reload()" class="retry-button">重试</button>
+        </div>
+    </div>
+
+    <!-- 调试面板 (可选) -->
+    <div id="debug-panel" class="debug-panel hidden">
+        <div class="debug-header">
+            <h3>调试信息</h3>
+            <button onclick="toggleDebugPanel()" class="debug-close">×</button>
+        </div>
+        <div class="debug-content">
+            <div class="debug-section">
+                <h4>游戏状态</h4>
+                <pre id="debug-game-state"></pre>
+            </div>
+            <div class="debug-section">
+                <h4>事件日志</h4>
+                <div id="debug-event-log" class="debug-log"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模块化JavaScript加载 -->
+    <script type="module">
+        // 动态加载模块并显示进度
+        const modules = [
+            'core/EventBus.js',
+            'core/ServiceLocator.js',
+            'models/GameState.js',
+            'utils/PromptParser.js',
+            'services/LLMService.js',
+            'services/DynamicPromptService.js',
+            'services/GameStateService.js',
+            'services/NPCService.js',
+            'controllers/GameController.js',
+            'views/GameView.js',
+            'core/GameCore.js'
+        ];
+
+        let loadedCount = 0;
+        const progressBar = document.getElementById('loadingBar');
+
+        function updateProgress() {
+            loadedCount++;
+            const progress = (loadedCount / modules.length) * 100;
+            progressBar.style.width = progress + '%';
+            
+            if (loadedCount === modules.length) {
+                // 所有模块加载完成，启动游戏
+                setTimeout(() => {
+                    import(window.GameConfig.BASE_URL + 'index.js');
+                }, 500);
+            }
+        }
+
+        // 预加载所有模块
+        modules.forEach(module => {
+            const fullPath = window.GameConfig.BASE_URL + module;
+            import(fullPath).then(() => {
+                updateProgress();
+            }).catch(error => {
+                console.error('Failed to load module:', fullPath, error);
+                showError(`模块加载失败: ${module}`);
+            });
+        });
+
+        // 错误处理函数
+        function showError(message) {
+            document.getElementById('loading-screen').classList.add('hidden');
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-container').classList.remove('hidden');
+        }
+
+        // 调试面板控制
+        window.toggleDebugPanel = function() {
+            const panel = document.getElementById('debug-panel');
+            panel.classList.toggle('hidden');
+        };
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+D 开启调试面板
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                toggleDebugPanel();
+            }
+            // ESC 关闭调试面板
+            if (e.key === 'Escape') {
+                document.getElementById('debug-panel').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
+

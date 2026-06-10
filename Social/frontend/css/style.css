@@ -1,0 +1,31 @@
+/* Social - 前端额外样式（Tailwind 补充分量） */
+
+/* 聊天文本区域样式 */
+#chatText {
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+    line-height: 1.6;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* 步骤进度条动画 */
+.step-active { transition: all 0.3s ease; }
+
+/* 雷达图进度条动画 */
+[id^="stepContent"] [style*="width"] {
+    transition: width 1s ease;
+}
+
+/* 卡片入场动画 */
+.card-hover { animation: fadeIn 0.5s ease; }
+
+/* 移动端适配 */
+@media (max-width: 640px) {
+    #progressBar .hidden { display: none; }
+    #progressBar .w-12 { width: 24px; }
+    .grid-cols-2 { grid-template-columns: 1fr; }
+}

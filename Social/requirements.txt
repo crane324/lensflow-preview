@@ -1,0 +1,15 @@
+# Social - 虚拟AI相亲系统 依赖
+# Python 3.10+
+
+# Web 框架
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+
+# LLM SDK
+openai>=1.50.0
+
+# 数据处理
+pydantic>=2.0.0
+
+# 工具
+python-multipart>=0.0.9

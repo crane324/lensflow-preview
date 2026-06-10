@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>匹配大厅 - Social</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --pink:#FF6B9D; --pink-deep:#D6336C; --bg:#f9f0f2;
+    --card:#fff; --text:#2D1B2E; --text-secondary:rgba(50,30,40,0.6);
+    --nav-bg:#ECDDC8; --border:rgba(201,124,135,0.12);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); font-family:'Inter','SF Pro Display','PingFang SC',-apple-system,sans-serif; color:var(--text); -webkit-font-smoothing:antialiased; min-height:100vh; overflow-x:hidden; }
+
+.navbar { position:fixed; top:0; left:0; right:0; z-index:100; background:var(--nav-bg); display:flex; align-items:center; justify-content:space-between; padding:0 40px; height:56px; border-bottom:1px solid rgba(0,0,0,0.04); }
+.nav-logo { font-size:20px; font-weight:700; background:linear-gradient(135deg,#D6336C,#FF6B9D); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-decoration:none; }
+.nav-links { display:flex; gap:36px; }
+.nav-link { color:#fff; text-decoration:none; font-size:15px; font-weight:300; font-family:'Noto Serif SC',serif; text-shadow:0 1px 2px rgba(0,0,0,0.08); }
+
+.main-container { max-width:1000px; margin:0 auto; padding:100px 24px 60px; }
+
+/* 标题 */
+.match-title { text-align:center; margin-bottom:12px; }
+.match-title h1 { font-size:28px; font-weight:700; color:var(--text); }
+.match-title p { font-size:14px; color:var(--text-secondary); margin-top:6px; }
+
+/* ====== 双人相亲角 ====== */
+.match-stage { display:flex; align-items:center; justify-content:center; gap:0; margin:40px 0; position:relative; }
+
+/* 人物卡片 */
+.persona-card {
+    width:300px; background:var(--card); border-radius:20px;
+    padding:28px 24px; text-align:center;
+    box-shadow:0 8px 24px rgba(0,0,0,0.06);
+    border:1px solid var(--border);
+    transition:all 0.4s ease; position:relative; z-index:2;
+}
+.persona-card:hover { transform:translateY(-3px); box-shadow:0 16px 40px rgba(0,0,0,0.10); }
+.persona-card.matched { border-color:rgba(255,107,157,0.3); animation:cardGlow 2s ease-in-out infinite; }
+@keyframes cardGlow {
+    0%,100%{box-shadow:0 8px 24px rgba(255,107,157,0.08);}
+    50%{box-shadow:0 8px 36px rgba(255,107,157,0.18);}
+}
+
+/* 头像 */
+.card-avatar {
+    width:88px; height:88px; border-radius:50%; margin:0 auto 14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:36px; background:linear-gradient(135deg,#fce4ec,#f8bbd0);
+    overflow:hidden;
+}
+.card-avatar img { width:100%; height:100%; object-fit:cover; }
+.card-avatar.pixelated img { image-rendering:pixelated; }
+.card-avatar.male { background:linear-gradient(135deg,#e8eaf6,#c5cae9); }
+.card-avatar.female { background:linear-gradient(135deg,#fce4ec,#f8bbd0); }
+.card-avatar.empty { background:linear-gradient(135deg,#f5f5f5,#eee); }
+
+.card-name { font-size:20px; font-weight:700; margin-bottom:4px; }
+.card-age { font-size:13px; color:var(--text-secondary); margin-bottom:8px; }
+.card-signature { font-size:13px; color:var(--text-secondary); line-height:1.5; margin-bottom:14px; font-style:italic; }
+.card-signature::before { content:'"'; }
+.card-signature::after { content:'"'; }
+
+.card-tags { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+.card-tag { padding:4px 12px; border-radius:14px; font-size:11px; font-weight:500;
+    background:rgba(255,107,157,0.06); border:1px solid rgba(255,107,157,0.15); color:#D6336C; }
+
+/* 空位状态 */
+.card-empty-state { padding:20px 0; }
+.card-empty-icon { font-size:48px; margin-bottom:10px; opacity:0.4; }
+.card-empty-text { font-size:14px; color:var(--text-secondary); }
+
+/* ====== 中间连接桥梁 ====== */
+.connection-bridge {
+    width:120px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:10px; position:relative; z-index:1;
+    flex-shrink:0;
+}
+.connection-line {
+    width:100%; height:2px;
+    border-top:2px dashed rgba(255,107,157,0.25);
+}
+.connection-heart {
+    font-size:32px; transition:all 0.6s cubic-bezier(0.68,-0.55,0.27,1.55);
+    filter:drop-shadow(0 0 8px rgba(255,107,157,0.2));
+    cursor:default;
+}
+.connection-heart.pulse {
+    animation:heartBeat 1.2s ease-in-out infinite;
+}
+@keyframes heartBeat {
+    0%,100%{transform:scale(1);}
+    15%{transform:scale(1.3);}
+    30%{transform:scale(1);}
+    45%{transform:scale(1.2);}
+    60%{transform:scale(1);}
+}
+.connection-label {
+    font-size:11px; color:var(--text-secondary);
+    text-align:center; line-height:1.4;
+}
+
+/* ====== 操作按钮 ====== */
+.match-actions { display:flex; justify-content:center; gap:16px; margin-top:32px; flex-wrap:wrap; }
+.btn { padding:12px 28px; border-radius:25px; font-size:15px; font-weight:600; cursor:pointer; border:none; font-family:inherit; transition:all 0.3s ease; display:inline-flex; align-items:center; gap:8px; }
+.btn-lock { background:linear-gradient(135deg,#FF6B9D,#D6336C); color:#fff; box-shadow:0 4px 16px rgba(255,107,157,0.3); }
+.btn-lock:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(255,107,157,0.4); }
+.btn-lock:disabled { opacity:0.4; pointer-events:none; }
+.btn-refresh { background:var(--card); color:var(--text); border:1.5px solid var(--border); }
+.btn-refresh:hover { border-color:var(--pink); color:var(--pink-deep); }
+.btn-cancel { background:transparent; color:var(--text-secondary); border:none; font-size:14px; }
+.btn-cancel:hover { color:#e57373; }
+
+/* 未生成分身时的提示 */
+.no-persona-hint { text-align:center; padding:60px 20px; }
+.no-persona-hint .icon { font-size:60px; margin-bottom:16px; }
+.no-persona-hint h2 { font-size:20px; color:var(--text); margin-bottom:8px; }
+.no-persona-hint p { font-size:14px; color:var(--text-secondary); margin-bottom:24px; }
+
+@media (max-width:768px) {
+    .match-stage { flex-direction:column; gap:20px; }
+    .connection-bridge { width:100%; flex-direction:row; }
+    .connection-line { width:2px; height:40px; border-top:none; border-left:2px dashed rgba(255,107,157,0.25); }
+    .persona-card { width:100%; max-width:320px; }
+    .navbar { padding:0 16px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="/" class="nav-logo">Social</a>
+    <div class="nav-links">
+        <a href="/" class="nav-link">首页</a>
+        <a href="/workshop.html" class="nav-link">捏个分身</a>
+        <a href="/scene.html" class="nav-link">开始约会</a>
+        <a href="/report.html" class="nav-link">看看缘分</a>
+    </div>
+</nav>
+
+<div class="main-container" id="app">
+
+    <!-- 未生成分身时显示 -->
+    <div class="no-persona-hint" id="noPersonaHint" style="display:none">
+        <div class="icon">🤖</div>
+        <h2>你还没有创建数字人分身</h2>
+        <p>先去「捏个分身」完成你的数字人档案，再来匹配吧～</p>
+        <a href="workshop.html" class="btn btn-lock" style="text-decoration:none;">去创建分身 →</a>
+    </div>
+
+    <!-- 匹配大厅主体 -->
+    <div id="matchHall">
+        <div class="match-title">
+            <h1>💕 匹配大厅</h1>
+            <p>你的数字人与 TA 在此相遇</p>
+        </div>
+
+        <div class="match-stage">
+            <!-- 左侧：我的分身 -->
+            <div class="persona-card" id="myCard">
+                <div class="card-avatar" id="myAvatar">
+                    <span>🤖</span>
+                </div>
+                <div class="card-name" id="myName">---</div>
+                <div class="card-age" id="myAge">---</div>
+                <div class="card-signature" id="myBio">---</div>
+                <div class="card-tags" id="myTags"></div>
+            </div>
+
+            <!-- 中间连接桥梁 -->
+            <div class="connection-bridge">
+                <div class="connection-line"></div>
+                <div class="connection-heart" id="connectionHeart">💗</div>
+                <div class="connection-label" id="connectionLabel">等待相遇</div>
+                <div class="connection-line"></div>
+            </div>
+
+            <!-- 右侧：TA的分身 -->
+            <div class="persona-card" id="matchCard">
+                <div class="card-avatar empty" id="matchAvatar">
+                    <span style="font-size:40px;opacity:0.3;">✨</span>
+                </div>
+                <div class="card-empty-state" id="matchEmpty">
+                    <div class="card-empty-icon">💫</div>
+                    <div class="card-empty-text">寻找中...</div>
+                </div>
+                <div id="matchInfo" style="display:none">
+                    <div class="card-name" id="matchName">---</div>
+                    <div class="card-age" id="matchAge">---</div>
+                    <div class="card-signature" id="matchBio">---</div>
+                    <div class="card-tags" id="matchTags"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="match-actions">
+            <button class="btn btn-cancel" onclick="window.location.href='workshop.html'">✖️ 返回修改</button>
+            <button class="btn btn-refresh" onclick="refreshMatch()" id="refreshBtn" style="display:none">🔄 换一个</button>
+            <button class="btn btn-lock" onclick="findMatch()" id="findBtn">💕 点击匹配</button>
+            <button class="btn btn-lock" onclick="lockMatch()" id="lockBtn" style="display:none">💕 锁定匹配</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== 异性嘉宾档案库 ==========
+var MATCH_POOL = [
+    {name:'陈墨',age:27,gender:'male',hbd:'8月5日',skills:'数据分析·摄影·攀岩',personality:'理性逻辑·外冷内热',mbti:'INTJ-T',values:'事业成就型·自由探索型',interests:['摄影','攀岩','科技数码','天文学','围棋'],bio:'话不多但心里有片宇宙',avatarEmoji:'🧑‍💻'},
+    {name:'沈岸',age:29,gender:'male',hbd:'11月20日',skills:'烹饪·木工·潜水',personality:'成熟稳重·温暖细腻',mbti:'ISFJ-T',values:'家庭归属型·稳定安全型',interests:['烹饪','木工','潜水','古典音乐','园艺'],bio:'把木头变成有温度的物件',avatarEmoji:'🧑‍🍳'},
+    {name:'陆川',age:26,gender:'male',hbd:'2月14日',skills:'吉他弹唱·写作·攀岩',personality:'幽默风趣·文艺清新',mbti:'ENFP-A',values:'成长学习型·自由探索型',interests:['吉他','写作','户外运动','脱口秀','公路旅行'],bio:'想到什么就立刻去做',avatarEmoji:'🧑‍🎤'},
+    {name:'江屿',age:28,gender:'male',hbd:'5月8日',skills:'全栈开发·调酒·冲浪',personality:'外向活跃·冒险精神',mbti:'ESTP-A',values:'自由探索型·事业成就型',interests:['编程','调酒','冲浪','摩托车','露营'],bio:'冲浪程序员，骑摩托环过台湾',avatarEmoji:'🏄'},
+    {name:'林悦',age:24,gender:'female',hbd:'3月12日',skills:'手冲咖啡·插画·尤克里里',personality:'温和均衡·文艺清新',mbti:'INFP-T',values:'自由探索型·成长学习型',interests:['咖啡','插画','独立音乐','旅行','烘焙'],bio:'泡咖啡馆画画的插画师',avatarEmoji:'👩‍🎨'},
+    {name:'苏糖',age:22,gender:'female',hbd:'6月28日',skills:'烘焙·日语·长跑',personality:'活泼开朗·话痨分享型',mbti:'ENFP-A',values:'家庭归属型·成长学习型',interests:['烘焙','日剧','长跑','宠物','桌游'],bio:'行走的小太阳',avatarEmoji:'👩‍🍳'},
+    {name:'姜莱',age:25,gender:'female',hbd:'9月17日',skills:'服装设计·法语·瑜伽',personality:'独立强势·感性温暖',mbti:'ENTJ-A',values:'自由探索型·事业成就型',interests:['时尚设计','法语','瑜伽','看展','爵士乐'],bio:'创业中的服装设计师',avatarEmoji:'👩‍💼'},
+    {name:'温晴',age:23,gender:'female',hbd:'12月1日',skills:'花艺设计·心理咨询·钢琴',personality:'内向安静·善良细腻',mbti:'ISFP-T',values:'稳定安全型·家庭归属型',interests:['花艺','心理学','钢琴','养猫','诗集'],bio:'阳台上种满花的心理咨询师',avatarEmoji:'👩‍🌾'},
+];
+
+var myPersona = null;
+var currentMatch = null;
+var _lastMatchIdx = -1;
+
+// ========== 初始化 ==========
+(function init() {
+    var raw = localStorage.getItem('social_my_persona');
+    if (!raw) {
+        document.getElementById('matchHall').style.display = 'none';
+        document.getElementById('noPersonaHint').style.display = 'block';
+        return;
+    }
+    try {
+        myPersona = JSON.parse(raw);
+        renderMyCard();
+    } catch(e) {
+        document.getElementById('matchHall').style.display = 'none';
+        document.getElementById('noPersonaHint').style.display = 'block';
+    }
+})();
+
+function renderMyCard() {
+    if (!myPersona) return;
+    document.getElementById('myName').textContent = myPersona.name || '未命名';
+    document.getElementById('myAge').textContent = (myPersona.age||'') + '岁 · ' + (myPersona.mbti||'');
+    document.getElementById('myBio').textContent = myPersona.bio ? myPersona.bio.slice(0,30)+'...' : '';
+
+    var tags = [];
+    if (myPersona.personality) tags.push(myPersona.personality.split('·')[0].trim());
+    if (myPersona.values) tags.push(myPersona.values.split('·')[0].trim());
+    if (myPersona.interests) myPersona.interests.slice(0,3).forEach(function(t){tags.push(t);});
+    document.getElementById('myTags').innerHTML = tags.map(function(t){return '<span class="card-tag">'+t+'</span>';}).join('');
+
+    // 头像
+    var avatar = document.getElementById('myAvatar');
+    avatar.classList.add(myPersona.gender === 'male' ? 'male' : 'female');
+    if (myPersona.avatarDataUrl) {
+        avatar.innerHTML = '<img src="'+myPersona.avatarDataUrl+'" alt="头像">';
+        if (myPersona.pixelMode) avatar.classList.add('pixelated');
+    } else {
+        avatar.innerHTML = '<span>'+getGenderEmoji(myPersona.gender)+'</span>';
+    }
+}
+
+function getGenderEmoji(gender) {
+    return gender === 'male' ? '🧑‍💻' : '👩‍🎨';
+}
+
+// ========== 匹配逻辑 ==========
+function findMatch() {
+    // 筛选异性
+    var myGender = myPersona.gender || 'male';
+    var targetGender = myGender === 'male' ? 'female' : 'male';
+    var pool = MATCH_POOL.filter(function(p) { return p.gender === targetGender; });
+
+    if (pool.length === 0) pool = MATCH_POOL;
+
+    var idx;
+    do { idx = Math.floor(Math.random() * pool.length); }
+    while (idx === _lastMatchIdx && pool.length > 1);
+    _lastMatchIdx = idx;
+
+    currentMatch = pool[idx];
+
+    // 渲染右侧卡片
+    document.getElementById('matchEmpty').style.display = 'none';
+    document.getElementById('matchInfo').style.display = 'block';
+    document.getElementById('matchName').textContent = currentMatch.name;
+    document.getElementById('matchAge').textContent = currentMatch.age+'岁 · '+currentMatch.mbti;
+    document.getElementById('matchBio').textContent = currentMatch.bio;
+
+    var tags = [];
+    if (currentMatch.personality) tags.push(currentMatch.personality.split('·')[0].trim());
+    if (currentMatch.values) tags.push(currentMatch.values.split('·')[0].trim());
+    if (currentMatch.interests) currentMatch.interests.slice(0,3).forEach(function(t){tags.push(t);});
+    document.getElementById('matchTags').innerHTML = tags.map(function(t){return '<span class="card-tag">'+t+'</span>';}).join('');
+
+    // 更新头像
+    var avatar = document.getElementById('matchAvatar');
+    avatar.classList.remove('empty');
+    avatar.classList.add(targetGender === 'male' ? 'male' : 'female');
+    avatar.innerHTML = '<span>'+currentMatch.avatarEmoji+'</span>';
+
+    // 卡片匹配动画
+    document.getElementById('matchCard').classList.add('matched');
+
+    // 连接心跳动
+    var heart = document.getElementById('connectionHeart');
+    heart.classList.add('pulse');
+    heart.textContent = '💖';
+    document.getElementById('connectionLabel').textContent = '缘分来了！';
+
+    // 按钮切换
+    document.getElementById('findBtn').style.display = 'none';
+    document.getElementById('refreshBtn').style.display = 'inline-flex';
+    document.getElementById('lockBtn').style.display = 'inline-flex';
+}
+
+function refreshMatch() {
+    // 重置匹配状态
+    document.getElementById('matchEmpty').style.display = 'block';
+    document.getElementById('matchInfo').style.display = 'none';
+    document.getElementById('matchAvatar').classList.add('empty');
+    document.getElementById('matchAvatar').classList.remove('male','female');
+    document.getElementById('matchAvatar').innerHTML = '<span style="font-size:40px;opacity:0.3;">✨</span>';
+    document.getElementById('matchCard').classList.remove('matched');
+    document.getElementById('connectionHeart').classList.remove('pulse');
+    document.getElementById('connectionHeart').textContent = '💗';
+    document.getElementById('connectionLabel').textContent = '寻找中...';
+    document.getElementById('lockBtn').style.display = 'none';
+    document.getElementById('refreshBtn').style.display = 'none';
+    document.getElementById('findBtn').style.display = 'inline-flex';
+    currentMatch = null;
+
+    // 短暂延迟后重新匹配
+    setTimeout(function() { findMatch(); }, 400);
+}
+
+function lockMatch() {
+    if (!currentMatch) return;
+
+    // 保存匹配对象
+    localStorage.setItem('social_match_persona', JSON.stringify(currentMatch));
+
+    // 心跳动画
+    var heart = document.getElementById('connectionHeart');
+    heart.textContent = '💘';
+    heart.style.transform = 'scale(1.5)';
+    document.getElementById('connectionLabel').textContent = '锁定成功！';
+    setTimeout(function() {
+        heart.style.transform = 'scale(1)';
+    }, 500);
+
+    // 跳转场景选择
+    setTimeout(function() {
+        window.location.href = 'scene.html';
+    }, 1200);
+}
+
+console.log('💕 匹配大厅 · 双人相亲角 · 8人异性嘉宾库');
+</script>
+</body>
+</html>

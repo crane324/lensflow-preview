@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选择约会场景 - Social</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        :root {
+            --rose: #d9b2b5; --rose-light: #ecd5d7; --rose-deep: #c49da1;
+            --accent: #c97c87; --accent2: #e8a0a8; --bg: #fdf4f4;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh; -webkit-font-smoothing: antialiased;
+            background-image:
+                radial-gradient(ellipse at 35% 0%, rgba(201,124,135,0.07) 0%, transparent 55%),
+                radial-gradient(ellipse at 75% 100%, rgba(232,168,176,0.05) 0%, transparent 50%);
+        }
+
+        /* 导航 */
+        .nav-bar {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:16px 32px; background:rgba(255,250,250,0.7);
+            backdrop-filter:blur(16px); border-bottom:1px solid rgba(201,124,135,0.1);
+        }
+        .nav-logo { font-size:22px; font-weight:700; background:linear-gradient(135deg,#c97c87,#e8a0a8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .nav-back { color:#8b7b7d; text-decoration:none; font-size:14px; transition:color 0.2s; }
+        .nav-back:hover { color:#c97c87; }
+
+        .main-container { max-width:1100px; margin:0 auto; padding:40px 24px 60px; }
+
+        /* 标题 */
+        .page-title { text-align:center; margin-bottom:36px; }
+        .page-title h1 { font-size:32px; font-weight:700; color:#3d2c2e; }
+        .page-title p { font-size:15px; color:#a89497; margin-top:6px; }
+
+        /* 场景网格 */
+        .scene-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }
+
+        /* ====== 场景卡片通用 ====== */
+        .scene-card {
+            position:relative; border-radius:24px; overflow:hidden;
+            cursor:pointer; aspect-ratio:5/4;
+            transition:all 0.45s cubic-bezier(0.25,0.46,0.45,0.94);
+            box-shadow:0 4px 24px rgba(0,0,0,0.05);
+            border:2px solid transparent;
+        }
+        .scene-card:hover { transform:translateY(-6px); box-shadow:0 24px 56px rgba(0,0,0,0.10); }
+        .scene-card:active { transform:scale(0.97); }
+
+        /* 场景氛围层 */
+        .scene-atmosphere { position:absolute; inset:0; transition:transform 0.7s ease; z-index:0; }
+        .scene-card:hover .scene-atmosphere { transform:scale(1.06); }
+
+        /* 粒子装饰层 */
+        .scene-particles { position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+        .sp-particle {
+            position:absolute; border-radius:50%; pointer-events:none;
+            animation:spFloat 4s ease-in-out infinite;
+        }
+        @keyframes spFloat {
+            0%,100% { transform:translate(0,0) scale(1); opacity:0.4; }
+            50% { transform:translate(8px,-12px) scale(1.4); opacity:0.7; }
+        }
+
+        /* 场景内容 */
+        .scene-content { position:relative; z-index:3; height:100%; display:flex; flex-direction:column; justify-content:flex-end; padding:28px; }
+        .scene-icon { font-size:56px; margin-bottom:10px; transition:transform 0.4s ease; }
+        .scene-card:hover .scene-icon { transform:scale(1.1) translateY(-4px); }
+        .scene-name { font-size:24px; font-weight:700; margin-bottom:6px; }
+        .scene-desc { font-size:13px; line-height:1.7; }
+        .scene-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; }
+        .scene-tag { padding:5px 14px; border-radius:20px; font-size:12px; font-weight:500; }
+
+        /* ====== 校园空间 ====== */
+        .card-campus .scene-atmosphere {
+            background:linear-gradient(165deg, #fce4ec 0%, #f8bbd0 25%, #fff9c4 55%, #e8f5e9 85%, #fdf4f4 100%);
+        }
+        .card-campus { border-color:rgba(244,143,177,0.12); }
+        .card-campus .scene-name { color:#ad1457; }
+        .card-campus .scene-desc { color:#8b6578; }
+        .card-campus .scene-tag { background:rgba(255,255,255,0.7); color:#ad1457; }
+        .card-campus .sp-particle { background:#f48fb1; }
+
+        /* ====== 职场空间 ====== */
+        .card-workplace .scene-atmosphere {
+            background:linear-gradient(165deg, #e8eaf6 0%, #c5cae9 25%, #e3f2fd 50%, #f5f5f5 80%, #fdf4f4 100%);
+        }
+        .card-workplace { border-color:rgba(121,134,203,0.12); }
+        .card-workplace .scene-name { color:#283593; }
+        .card-workplace .scene-desc { color:#5c6b8a; }
+        .card-workplace .scene-tag { background:rgba(255,255,255,0.7); color:#283593; }
+        .card-workplace .sp-particle { background:#7986cb; }
+
+        /* ====== 约会空间 ====== */
+        .card-dating .scene-atmosphere {
+            background:linear-gradient(165deg, #fce4ec 0%, #f8bbd0 20%, #ffe0b2 50%, #fff8e1 75%, #fdf4f4 100%);
+        }
+        .card-dating { border-color:rgba(240,98,146,0.12); }
+        .card-dating .scene-name { color:#c2185b; }
+        .card-dating .scene-desc { color:#8b5e6b; }
+        .card-dating .scene-tag { background:rgba(255,255,255,0.7); color:#c2185b; }
+        .card-dating .sp-particle { background:#f06292; }
+
+        /* ====== 风暴空间 ====== */
+        .card-storm .scene-atmosphere {
+            background:linear-gradient(165deg, #263238 0%, #37474f 20%, #455a64 40%, #546e7a 65%, #fdf4f4 100%);
+        }
+        .card-storm { border-color:rgba(84,110,122,0.15); }
+        .card-storm .scene-name { color:#ffffff; text-shadow:0 0 20px rgba(255,255,255,0.3); }
+        .card-storm .scene-desc { color:rgba(255,255,255,0.75); }
+        .card-storm .scene-tag { background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.85); backdrop-filter:blur(4px); }
+        .card-storm .sp-particle { background:rgba(255,255,255,0.5); }
+
+        /* 选中状态 */
+        .scene-card.selected { box-shadow:0 0 0 3px #c97c87, 0 20px 50px rgba(201,124,135,0.25); transform:translateY(-6px); }
+        .scene-card.selected::after {
+            content:'✓'; position:absolute; top:16px; right:16px; z-index:10;
+            width:32px; height:32px; border-radius:50%;
+            background:#c97c87; color:#fff;
+            display:flex; align-items:center; justify-content:center;
+            font-size:16px; font-weight:bold;
+        }
+
+        /* 确认按钮 */
+        .confirm-section { text-align:center; margin-top:44px; }
+        .confirm-btn {
+            display:inline-flex; align-items:center; gap:8px;
+            padding:16px 48px; border-radius:50px;
+            background:linear-gradient(135deg,#c97c87,#e8a0a8);
+            color:#fff; font-size:17px; font-weight:600;
+            text-decoration:none; cursor:pointer;
+            box-shadow:0 8px 32px rgba(201,124,135,0.25);
+            transition:all 0.3s ease; border:none;
+            opacity:0.4; pointer-events:none;
+        }
+        .confirm-btn.active { opacity:1; pointer-events:auto; }
+        .confirm-btn.active:hover { transform:translateY(-2px); box-shadow:0 16px 48px rgba(201,124,135,0.35); }
+
+        @media (max-width:640px) {
+            .scene-grid { grid-template-columns:1fr; }
+            .page-title h1 { font-size:24px; }
+            .scene-name { font-size:20px; }
+            .card-storm .scene-atmosphere { background:linear-gradient(165deg, #263238 0%, #37474f 30%, #546e7a 60%, #fdf4f4 100%); }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-bar">
+        <span class="nav-logo">Social</span>
+        <a href="/" class="nav-back"><i class="fa fa-arrow-left"></i> 返回</a>
+    </nav>
+
+    <div class="main-container">
+        <div class="page-title">
+            <h1>🌍 选择一个约会场景</h1>
+            <p>数字人将在不同的虚拟世界中相遇，每个场景都是独特的体验</p>
+        </div>
+
+        <div class="scene-grid">
+
+            <!-- 校园空间 -->
+            <div class="scene-card card-campus" data-scene="campus" onclick="selectScene(this)">
+                <div class="scene-atmosphere"></div>
+                <div class="scene-particles">
+                    <span class="sp-particle" style="width:6px;height:6px;top:20%;left:18%;animation-delay:0s;"></span>
+                    <span class="sp-particle" style="width:4px;height:4px;top:35%;right:22%;animation-delay:1.5s;"></span>
+                    <span class="sp-particle" style="width:8px;height:8px;bottom:30%;left:25%;animation-delay:3s;"></span>
+                    <span class="sp-particle" style="width:3px;height:3px;top:15%;right:35%;animation-delay:2s;"></span>
+                </div>
+                <div class="scene-content">
+                    <div class="scene-icon">🏫</div>
+                    <div class="scene-name">校园空间</div>
+                    <div class="scene-desc">图书馆阳光洒落的午后、社团活动后的谈天、樱花树下的偶遇。回到最纯真的时光，在青春里撞见心动。</div>
+                    <div class="scene-tags">
+                        <span class="scene-tag">纯真浪漫</span>
+                        <span class="scene-tag">文艺清新</span>
+                        <span class="scene-tag">青春悸动</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 职场空间 -->
+            <div class="scene-card card-workplace" data-scene="workplace" onclick="selectScene(this)">
+                <div class="scene-atmosphere"></div>
+                <div class="scene-particles">
+                    <span class="sp-particle" style="width:5px;height:5px;top:22%;right:20%;animation-delay:0.5s;"></span>
+                    <span class="sp-particle" style="width:7px;height:7px;bottom:25%;left:20%;animation-delay:2s;"></span>
+                    <span class="sp-particle" style="width:4px;height:4px;top:30%;left:30%;animation-delay:3.5s;"></span>
+                    <span class="sp-particle" style="width:6px;height:6px;top:18%;right:28%;animation-delay:1s;"></span>
+                </div>
+                <div class="scene-content">
+                    <div class="scene-icon">🏢</div>
+                    <div class="scene-name">职场空间</div>
+                    <div class="scene-desc">茶水间的闲聊、项目攻坚时的并肩作战、午夜写字楼里互相递来的咖啡。在奋斗的城市丛林里，遇见懂你的人。</div>
+                    <div class="scene-tags">
+                        <span class="scene-tag">成熟稳重</span>
+                        <span class="scene-tag">并肩成长</span>
+                        <span class="scene-tag">知性优雅</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 约会空间 -->
+            <div class="scene-card card-dating" data-scene="dating" onclick="selectScene(this)">
+                <div class="scene-atmosphere"></div>
+                <div class="scene-particles">
+                    <span class="sp-particle" style="width:5px;height:5px;top:15%;left:25%;animation-delay:0.3s;"></span>
+                    <span class="sp-particle" style="width:6px;height:6px;top:28%;right:18%;animation-delay:1.8s;"></span>
+                    <span class="sp-particle" style="width:4px;height:4px;bottom:30%;right:25%;animation-delay:3.2s;"></span>
+                    <span class="sp-particle" style="width:7px;height:7px;top:20%;left:35%;animation-delay:2.5s;"></span>
+                </div>
+                <div class="scene-content">
+                    <div class="scene-icon">🕯️</div>
+                    <div class="scene-name">约会空间</div>
+                    <div class="scene-desc">烛光晚餐的微醺、天台上的城市夜景、电影散场后并肩走在灯光下。正式约会的仪式感，让浪漫在精心布置中悄然升温。</div>
+                    <div class="scene-tags">
+                        <span class="scene-tag">浪漫仪式</span>
+                        <span class="scene-tag">烛光微醺</span>
+                        <span class="scene-tag">心动升温</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 风暴空间 -->
+            <div class="scene-card card-storm" data-scene="storm" onclick="selectScene(this)">
+                <div class="scene-atmosphere"></div>
+                <div class="scene-particles">
+                    <span class="sp-particle" style="width:5px;height:5px;top:18%;left:22%;animation-delay:0s;"></span>
+                    <span class="sp-particle" style="width:4px;height:4px;top:25%;right:20%;animation-delay:1.2s;"></span>
+                    <span class="sp-particle" style="width:6px;height:6px;bottom:28%;left:28%;animation-delay:2.8s;"></span>
+                    <span class="sp-particle" style="width:3px;height:3px;top:32%;right:30%;animation-delay:3.6s;"></span>
+                    <span class="sp-particle" style="width:8px;height:8px;bottom:20%;right:18%;animation-delay:1.8s;"></span>
+                    <span class="sp-particle" style="width:4px;height:4px;top:22%;left:40%;animation-delay:4.2s;"></span>
+                </div>
+                <div class="scene-content">
+                    <div class="scene-icon">⛈️</div>
+                    <div class="scene-name">风暴空间</div>
+                    <div class="scene-desc">突如其来的停电、航班延误的深夜、暴风雨中挤在一把伞下。危机见真情——在最意外的事件里，看见彼此最真实的模样。</div>
+                    <div class="scene-tags">
+                        <span class="scene-tag">真实考验</span>
+                        <span class="scene-tag">患难见真情</span>
+                        <span class="scene-tag">意外心动</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="confirm-section">
+            <button class="confirm-btn" id="confirmBtn" onclick="startDating()">
+                锁定场景，开始约会 <i class="fa fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+    var selectedScene = null;
+
+    function selectScene(el) {
+        document.querySelectorAll('.scene-card').forEach(function(c) { c.classList.remove('selected'); });
+        el.classList.add('selected');
+        selectedScene = el.dataset.scene;
+        document.getElementById('confirmBtn').classList.add('active');
+    }
+
+    function startDating() {
+        if (!selectedScene) return;
+        // TODO: 接入后端 → 启动该场景下的数字人对话
+        window.location.href = 'dating.html?scene=' + selectedScene;
+    }
+
+    console.log('🌍 四大场景：校园 | 职场 | 约会 | 风暴');
+    </script>
+</body>
+</html>

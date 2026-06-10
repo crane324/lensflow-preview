@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>匹配报告 - Social</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        :root {
+            --rose: #d9b2b5; --rose-light: #ecd5d7; --rose-deep: #c49da1;
+            --accent: #c97c87; --accent2: #e8a0a8; --bg: #fdf4f4; --text: #3d2c2e;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh; -webkit-font-smoothing: antialiased;
+            background-image:
+                radial-gradient(ellipse at 30% 0%, rgba(201,124,135,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 100%, rgba(232,168,176,0.05) 0%, transparent 50%);
+        }
+
+        .nav-bar {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:16px 32px; background:rgba(255,250,250,0.7);
+            backdrop-filter:blur(16px); border-bottom:1px solid rgba(201,124,135,0.1);
+        }
+        .nav-logo { font-size:22px; font-weight:700; background:linear-gradient(135deg,#c97c87,#e8a0a8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .nav-back { color:#8b7b7d; text-decoration:none; font-size:14px; }
+        .nav-back:hover { color:#c97c87; }
+
+        .main-container { max-width:900px; margin:0 auto; padding:40px 24px 60px; }
+
+        /* ====== 头部总分 ====== */
+        .score-hero {
+            text-align:center; margin-bottom:40px;
+            animation: fadeSlideIn 0.6s ease;
+        }
+        @keyframes fadeSlideIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+        .score-ring-wrap {
+            position:relative; display:inline-block; margin-bottom:16px;
+        }
+        .score-ring {
+            transform:rotate(-90deg);
+        }
+        .score-ring .bg-circle {
+            fill:none; stroke:#f0e0e3; stroke-width:10;
+        }
+        .score-ring .fg-circle {
+            fill:none; stroke:url(#scoreGrad); stroke-width:10; stroke-linecap:round;
+            transition:stroke-dashoffset 1.5s cubic-bezier(0.25,0.46,0.45,0.94);
+        }
+        .score-number {
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            font-size:56px; font-weight:800; color:var(--text);
+        }
+        .score-label {
+            font-size:14px; color:#a89497; margin-top:-8px;
+        }
+
+        /* ====== 双方头像 ====== */
+        .couple-row {
+            display:flex; align-items:center; justify-content:center; gap:40px;
+            margin-bottom:40px;
+        }
+        .person-badge {
+            text-align:center; animation:fadeSlideIn 0.6s ease 0.2s both;
+        }
+        .person-avatar {
+            width:72px; height:72px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-size:32px; margin:0 auto 8px;
+            box-shadow:0 4px 16px rgba(0,0,0,0.06);
+        }
+        .person-name { font-size:16px; font-weight:600; color:var(--text); }
+        .person-trait { font-size:12px; color:#a89497; margin-top:2px; }
+
+        .vs-badge {
+            width:48px; height:48px; border-radius:50%;
+            background:linear-gradient(135deg,#c97c87,#e8a0a8);
+            color:#fff; display:flex; align-items:center; justify-content:center;
+            font-size:14px; font-weight:700;
+            box-shadow:0 4px 16px rgba(201,124,135,0.25);
+        }
+
+        /* ====== 维度评分卡片 ====== */
+        .section-card {
+            background:#fff; border-radius:20px; padding:28px;
+            box-shadow:0 2px 16px rgba(0,0,0,0.03);
+            margin-bottom:24px;
+            border:1px solid rgba(201,124,135,0.06);
+            animation:fadeSlideIn 0.6s ease 0.3s both;
+        }
+        .section-title {
+            font-size:18px; font-weight:700; color:var(--text); margin-bottom:20px;
+            display:flex; align-items:center; gap:8px;
+        }
+        .section-title .icon { font-size:20px; }
+
+        /* 维度条 */
+        .dimension-item { margin-bottom:18px; }
+        .dim-header { display:flex; justify-content:space-between; margin-bottom:6px; }
+        .dim-name { font-size:14px; font-weight:600; color:var(--text); }
+        .dim-score { font-size:14px; font-weight:700; color:#c97c87; }
+        .dim-bar { height:8px; border-radius:4px; background:#f5e8ea; overflow:hidden; }
+        .dim-fill {
+            height:100%; border-radius:4px;
+            transition:width 1.2s cubic-bezier(0.25,0.46,0.45,0.94);
+        }
+
+        /* ====== 雷达图 ====== */
+        .radar-wrap {
+            display:flex; justify-content:center; padding:8px 0;
+        }
+        canvas#radarChart { max-width:320px; width:100%; }
+
+        /* ====== 对话亮点 ====== */
+        .highlight-item {
+            padding:16px; border-radius:14px; margin-bottom:12px;
+            border-left:3px solid #c97c87;
+            background:linear-gradient(90deg, rgba(201,124,135,0.04), transparent);
+        }
+        .highlight-moment { font-size:12px; color:#a89497; margin-bottom:4px; }
+        .highlight-text { font-size:14px; color:var(--text); line-height:1.6; font-style:italic; }
+
+        /* ====== 改进建议 ====== */
+        .suggestion-item {
+            display:flex; gap:12px; padding:14px 0; border-bottom:1px solid #f5e8ea;
+        }
+        .suggestion-item:last-child { border-bottom:none; }
+        .suggestion-icon {
+            width:36px; height:36px; border-radius:50%; flex-shrink:0;
+            display:flex; align-items:center; justify-content:center; font-size:18px;
+        }
+        .suggestion-text { font-size:14px; color:var(--text); line-height:1.6; }
+
+        /* 按钮 */
+        .action-row { display:flex; gap:16px; margin-top:32px; animation:fadeSlideIn 0.6s ease 0.5s both; }
+        .btn {
+            flex:1; padding:14px 24px; border-radius:50px; font-size:16px; font-weight:600;
+            text-align:center; cursor:pointer; text-decoration:none; transition:all 0.3s ease;
+        }
+        .btn-primary {
+            background:linear-gradient(135deg,#c97c87,#e8a0a8); color:#fff;
+            border:none; box-shadow:0 8px 24px rgba(201,124,135,0.25);
+        }
+        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 14px 36px rgba(201,124,135,0.35); }
+        .btn-outline {
+            background:#fff; color:#c97c87; border:1.5px solid rgba(201,124,135,0.3);
+        }
+        .btn-outline:hover { border-color:#c97c87; background:rgba(201,124,135,0.03); }
+
+        @media (max-width:640px) {
+            .couple-row { gap:24px; }
+            .person-avatar { width:56px; height:56px; font-size:24px; }
+            .action-row { flex-direction:column; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-bar">
+        <span class="nav-logo">Social</span>
+        <a href="/scene.html" class="nav-back"><i class="fa fa-arrow-left"></i> 重新选择场景</a>
+    </nav>
+
+    <div class="main-container">
+
+        <!-- ====== 总分头部 ====== -->
+        <div class="score-hero">
+            <div class="score-ring-wrap">
+                <svg class="score-ring" width="180" height="180" viewBox="0 0 180 180">
+                    <defs>
+                        <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#c97c87"/>
+                            <stop offset="100%" stop-color="#e8a0a8"/>
+                        </linearGradient>
+                    </defs>
+                    <circle class="bg-circle" cx="90" cy="90" r="80"/>
+                    <circle class="fg-circle" id="scoreCircle" cx="90" cy="90" r="80"
+                        stroke-dasharray="502.65" stroke-dashoffset="502.65"/>
+                </svg>
+                <div class="score-number" id="scoreNum">82</div>
+            </div>
+            <div class="score-label">综合好感度评分</div>
+        </div>
+
+        <!-- ====== 双方信息 ====== -->
+        <div class="couple-row">
+            <div class="person-badge">
+                <div class="person-avatar" style="background:linear-gradient(135deg,#fce4ec,#f8bbd0);">🧑‍💻</div>
+                <div class="person-name" id="personAName">张三</div>
+                <div class="person-trait" id="personATrait">幽默风趣 · 理性逻辑</div>
+            </div>
+            <div class="vs-badge">VS</div>
+            <div class="person-badge">
+                <div class="person-avatar" style="background:linear-gradient(135deg,#e8eaf6,#c5cae9);">👩‍🎨</div>
+                <div class="person-name" id="personBName">李四</div>
+                <div class="person-trait" id="personBTrait">活泼开朗 · 温暖细腻</div>
+            </div>
+        </div>
+
+        <!-- ====== 四维评分 ====== -->
+        <div class="section-card">
+            <div class="section-title"><span class="icon">📊</span> 四维好感度分析</div>
+            <div id="dimensions">
+                <div class="dimension-item">
+                    <div class="dim-header"><span class="dim-name">💬 话题共鸣</span><span class="dim-score">85</span></div>
+                    <div class="dim-bar"><div class="dim-fill" style="width:0%;background:linear-gradient(90deg,#c97c87,#e8a0a8);" data-width="85%"></div></div>
+                    <div style="font-size:12px;color:#a89497;margin-top:4px;">音乐、旅行、美食高度重合，聊天自然流畅</div>
+                </div>
+                <div class="dimension-item">
+                    <div class="dim-header"><span class="dim-name">🔄 对话流畅度</span><span class="dim-score">78</span></div>
+                    <div class="dim-bar"><div class="dim-fill" style="width:0%;background:linear-gradient(90deg,#d9b2b5,#c97c87);" data-width="78%"></div></div>
+                    <div style="font-size:12px;color:#a89497;margin-top:4px;">较少冷场，但偶尔出现话题衔接不够顺畅</div>
+                </div>
+                <div class="dimension-item">
+                    <div class="dim-header"><span class="dim-name">💗 情绪兼容</span><span class="dim-score">90</span></div>
+                    <div class="dim-bar"><div class="dim-fill" style="width:0%;background:linear-gradient(90deg,#c49da1,#d9b2b5);" data-width="90%"></div></div>
+                    <div style="font-size:12px;color:#a89497;margin-top:4px;">情绪表达频率和强度高度匹配，相处舒适自然</div>
+                </div>
+                <div class="dimension-item">
+                    <div class="dim-header"><span class="dim-name">🎭 风格契合</span><span class="dim-score">75</span></div>
+                    <div class="dim-bar"><div class="dim-fill" style="width:0%;background:linear-gradient(90deg,#ecd5d7,#d9b2b5);" data-width="75%"></div></div>
+                    <div style="font-size:12px;color:#a89497;margin-top:4px;">沟通方式有差异但可以互补，建议多关注对方节奏</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== 雷达图 ====== -->
+        <div class="section-card">
+            <div class="section-title"><span class="icon">🎯</span> 兼容性雷达图</div>
+            <div class="radar-wrap">
+                <canvas id="radarChart" width="320" height="320"></canvas>
+            </div>
+        </div>
+
+        <!-- ====== 对话亮点 ====== -->
+        <div class="section-card">
+            <div class="section-title"><span class="icon">✨</span> 对话亮点回顾</div>
+            <div class="highlight-item">
+                <div class="highlight-moment">🕐 第 3 分钟</div>
+                <div class="highlight-text">"你说你喜欢旅行？我也超爱！上次去大理的时候..." —— 共同兴趣引发热烈讨论，对话情绪明显升温</div>
+            </div>
+            <div class="highlight-item">
+                <div class="highlight-moment">🕐 第 7 分钟</div>
+                <div class="highlight-text">两人同时打出"哈哈哈哈哈"—— 幽默频率意外吻合，笑点出奇一致</div>
+            </div>
+            <div class="highlight-item">
+                <div class="highlight-moment">🕐 第 12 分钟</div>
+                <div class="highlight-text">关于未来的讨论中，价值观深度契合："我也觉得家庭比事业更重要"</div>
+            </div>
+        </div>
+
+        <!-- ====== 改进建议 ====== -->
+        <div class="section-card">
+            <div class="section-title"><span class="icon">💡</span> AI 改进建议</div>
+            <div class="suggestion-item">
+                <div class="suggestion-icon" style="background:#fce4ec;">🌱</div>
+                <div class="suggestion-text"><strong>多分享个人故事：</strong>对话中分析型话题偏多，适当加入个人经历会让交流更有温度。</div>
+            </div>
+            <div class="suggestion-item">
+                <div class="suggestion-icon" style="background:#e8eaf6;">🎯</div>
+                <div class="suggestion-text"><strong>注意节奏变化：</strong>对方偏向感性表达时，可以放慢节奏、多一些情感回应，少一些理性分析。</div>
+            </div>
+            <div class="suggestion-item">
+                <div class="suggestion-icon" style="background:#fff3e0;">💫</div>
+                <div class="suggestion-text"><strong>下次试试聊聊梦想：</strong>两人在"理想生活"这个话题上还有挖掘空间，下次约会可以深入聊聊。</div>
+            </div>
+        </div>
+
+        <!-- ====== 操作按钮 ====== -->
+        <div class="action-row">
+            <a href="dating.html" class="btn btn-primary"><i class="fa fa-heart"></i> 继续下一场约会</a>
+            <a href="scene.html" class="btn btn-outline"><i class="fa fa-globe"></i> 换个场景再试</a>
+        </div>
+
+    </div>
+
+    <script>
+    // ===== Mock 数据（后续换成 fetch API） =====
+    var MOCK_DATA = {
+        personA: { name: '张三', trait: '幽默风趣 · 理性逻辑', avatar: '🧑‍💻', color: '#f8bbd0' },
+        personB: { name: '李四', trait: '活泼开朗 · 温暖细腻', avatar: '👩‍🎨', color: '#c5cae9' },
+        totalScore: 82,
+        dimensions: [
+            { name: '话题共鸣', score: 85, color: '#c97c87' },
+            { name: '对话流畅度', score: 78, color: '#d9b2b5' },
+            { name: '情绪兼容', score: 90, color: '#c49da1' },
+            { name: '风格契合', score: 75, color: '#ecd5d7' }
+        ]
+    };
+
+    // ===== 页面渲染 =====
+    function loadReport(data) {
+        // Mock 填充
+        data = data || MOCK_DATA;
+
+        document.getElementById('personAName').textContent = data.personA.name;
+        document.getElementById('personATrait').textContent = data.personA.trait;
+        document.getElementById('personBName').textContent = data.personB.name;
+        document.getElementById('personBTrait').textContent = data.personB.trait;
+        document.getElementById('scoreNum').textContent = data.totalScore;
+
+        // 环形动画
+        setTimeout(function() {
+            var circumference = 502.65;
+            var offset = circumference - (data.totalScore / 100) * circumference;
+            document.getElementById('scoreCircle').style.strokeDashoffset = offset;
+        }, 300);
+
+        // 维度条动画
+        setTimeout(function() {
+            document.querySelectorAll('.dim-fill').forEach(function(el) {
+                el.style.width = el.dataset.width;
+            });
+        }, 500);
+
+        // 雷达图
+        drawRadar(data.dimensions);
+    }
+
+    // ===== Canvas 雷达图 =====
+    function drawRadar(dimensions) {
+        var canvas = document.getElementById('radarChart');
+        var ctx = canvas.getContext('2d');
+        var w = canvas.width, h = canvas.height;
+        var cx = w/2, cy = h/2, steps = 5, maxR = 130;
+        var n = dimensions.length;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // 背景网格
+        for (var s = 1; s <= steps; s++) {
+            var r = (maxR / steps) * s;
+            ctx.beginPath();
+            for (var i = 0; i < n; i++) {
+                var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+                var x = cx + Math.cos(angle) * r;
+                var y = cy + Math.sin(angle) * r;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = s === steps ? 'rgba(201,124,135,0.15)' : 'rgba(201,124,135,0.08)';
+            ctx.lineWidth = s === steps ? 1.5 : 1;
+            ctx.stroke();
+        }
+
+        // 轴线
+        for (var i = 0; i < n; i++) {
+            var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(angle) * maxR, cy + Math.sin(angle) * maxR);
+            ctx.strokeStyle = 'rgba(201,124,135,0.1)';
+            ctx.stroke();
+        }
+
+        // 数据区域
+        ctx.beginPath();
+        for (var i = 0; i < n; i++) {
+            var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+            var value = dimensions[i].score / 100;
+            var x = cx + Math.cos(angle) * maxR * value;
+            var y = cy + Math.sin(angle) * maxR * value;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(201,124,135,0.15)';
+        ctx.fill();
+        ctx.strokeStyle = '#c97c87';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // 数据点 + 标签
+        for (var i = 0; i < n; i++) {
+            var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+            var value = dimensions[i].score / 100;
+            var x = cx + Math.cos(angle) * maxR * value;
+            var y = cy + Math.sin(angle) * maxR * value;
+
+            // 点
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#c97c87';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 标签
+            var lx = cx + Math.cos(angle) * (maxR + 28);
+            var ly = cy + Math.sin(angle) * (maxR + 28);
+            ctx.fillStyle = '#3d2c2e';
+            ctx.font = 'bold 13px -apple-system, "PingFang SC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(dimensions[i].name, lx, ly);
+
+            // 分数
+            var sx = cx + Math.cos(angle) * (maxR * value + 16);
+            var sy = cy + Math.sin(angle) * (maxR * value + 16);
+            ctx.fillStyle = '#c97c87';
+            ctx.font = 'bold 11px -apple-system, "PingFang SC", sans-serif';
+            ctx.fillText(dimensions[i].score, sx, sy);
+        }
+    }
+
+    // ===== 启动 =====
+    loadReport();
+
+    console.log('📊 匹配报告页就绪');
+    console.log('📋 Mock模式：使用示例数据渲染');
+    console.log('🔌 后续接入：fetch /api/match/report → JSON → loadReport()');
+    </script>
+</body>
+</html>
