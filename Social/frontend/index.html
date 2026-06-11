@@ -507,7 +507,84 @@
         }
         .z-row.row-1 { justify-content:center; }
         .z-row.row-2 { justify-content:center; }
-        .z-row.row-3 { justify-content:flex-start; }
+        .z-row.row-3 { justify-content:center; gap:20px; }
+
+        /* 匹配报告卡片 */
+        .report-card {
+            width:580px; background:rgba(255,255,255,0.55);
+            backdrop-filter:blur(10px);
+            -webkit-backdrop-filter:blur(10px);
+            border:1px solid rgba(255,100,150,0.1);
+            border-radius:16px; padding:24px;
+            box-shadow:0 0 15px rgba(255,100,150,0.04), 0 4px 14px rgba(0,0,0,0.03);
+        }
+        .report-card-title {
+            font-family:'Inter',-apple-system,sans-serif;
+            font-size:18px; font-weight:700; color:#2D1B2E;
+            margin-bottom:16px; display:flex; align-items:center; gap:8px;
+            border-bottom:2px solid #D6336C; padding-bottom:12px;
+        }
+        .report-content { font-size:14px; color:var(--text); line-height:1.8; }
+        .report-score { font-size:48px; font-weight:800; color:#D6336C; text-align:center; }
+        .report-score-label { font-size:13px; color:#a89497; text-align:center; }
+
+        /* 心动备忘录 */
+        .diary-card {
+            width:320px; background:rgba(255,255,255,0.5);
+            backdrop-filter:blur(10px);
+            -webkit-backdrop-filter:blur(10px);
+            border:1px solid rgba(255,100,150,0.1);
+            border-radius:16px; padding:20px;
+            box-shadow:0 0 15px rgba(255,100,150,0.04);
+            position:relative;
+            background-image:repeating-linear-gradient(
+                0deg, transparent, transparent 27px, rgba(201,124,135,0.06) 28px
+            );
+        }
+        .diary-header {
+            font-family:'Inter',-apple-system,sans-serif;
+            font-size:16px; font-weight:700; color:#2D1B2E;
+            margin-bottom:14px; padding-bottom:10px;
+            border-bottom:1px solid rgba(201,124,135,0.1);
+        }
+        .diary-lines { position:relative; z-index:1; }
+        .diary-section { margin-bottom:14px; }
+        .diary-label {
+            font-size:11px; font-weight:700; color:#D6336C;
+            margin-bottom:4px; text-transform:uppercase; letter-spacing:0.04em;
+        }
+        .diary-text {
+            font-size:12px; color:#5a3a46; line-height:1.7;
+            font-family:'Inter','PingFang SC',sans-serif;
+        }
+        .diary-text[contenteditable]:empty:before {
+            content:attr(placeholder); color:#c0b0b5; font-style:italic;
+        }
+        .diary-text[contenteditable] {
+            outline:none; padding:4px 6px; border-radius:6px;
+            border:1px solid transparent; transition:border-color 0.2s;
+            min-height:28px;
+        }
+        .diary-text[contenteditable]:focus {
+            border-color:rgba(201,124,135,0.15); background:rgba(255,255,255,0.6);
+        }
+        .diary-keywords { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; padding-top:12px; border-top:1px solid rgba(201,124,135,0.06); }
+        .dk-tag {
+            padding:3px 10px; border-radius:12px; font-size:11px;
+            background:rgba(255,107,157,0.06); color:#D6336C;
+            font-family:'Inter',sans-serif;
+        }
+        .diary-add-btn {
+            margin-top:12px; padding:6px 14px; border-radius:14px;
+            border:1px dashed rgba(201,124,135,0.2); background:transparent;
+            color:#c0aeb0; font-size:12px; cursor:pointer; font-family:inherit;
+        }
+        .diary-add-btn:hover { border-color:#D6336C; color:#D6336C; }
+
+        @media (max-width:960px) {
+            .z-row.row-3 { flex-direction:column; align-items:center; }
+            .report-card, .diary-card { width:100%; max-width:580px; }
+        }
 
         /* ===== 心动信号站 - 双卡布局 ===== */
         .signal-station {
@@ -1251,9 +1328,9 @@
         <a href="/" class="nav-logo">Social</a>
     </div>
     <div class="nav-center">
-        <a href="/workshop.html" class="nav-link">捏个分身</a>
-        <a href="/scene.html" class="nav-link">开始约会</a>
-        <a href="/report.html" class="nav-link">看看缘分</a>
+        <a href="workshop.html" class="nav-link">捏个分身</a>
+        <a href="javascript:void(0)" onclick="window.checkMatchAndGo ? checkMatchAndGo() : window.location.href='/scene.html'" class="nav-link">开始约会</a>
+        <a href="report.html" class="nav-link">看看缘分</a>
         <a href="#about" class="nav-link">关于</a>
     </div>
     <div class="nav-right">
@@ -1393,21 +1470,45 @@
             </div>
         </div>
 
-        <!-- Z字第三行：左 -->
-        <div class="z-row row-3">
-            <div class="pixel-card">
-                <div class="pixel-card-title">
+        <!-- Z字第三行：匹配报告 + 心动备忘录 -->
+        <div class="z-row row-3" style="gap:20px;">
+            <!-- 左侧：匹配报告 -->
+            <div class="report-card">
+                <div class="report-card-title">
                     <span class="pixel-icon">📊</span> 心动档案
                 </div>
-                <div class="pixel-card-desc">
-                    对话结束后生成详细匹配报告：四维好感度评分、兼容性雷达图、对话亮点回顾与 AI 改进建议。数据可视化一目了然。
+                <div class="report-content" id="reportContent">
+                    <!-- JS动态填充 -->
                 </div>
-                <ul class="pixel-card-features">
-                    <li>四维好感度综合评分</li>
-                    <li>对话亮点智能回顾</li>
-                    <li>PDF 报告一键导出</li>
-                </ul>
-                <a href="/report.html" class="pixel-btn">查看报告 →</a>
+            </div>
+
+            <!-- 右侧：心动备忘录 -->
+            <div class="diary-card" id="diaryCard">
+                <div class="diary-header">🌱 心动备忘录</div>
+                <div class="diary-lines">
+                    <!-- AI洞察 -->
+                    <div class="diary-section" id="aiInsight">
+                        <div class="diary-label">🤖 AI 观察</div>
+                        <div class="diary-text" id="aiInsightText">点击「开始探索」开始交友后，这里将展示AI对你的观察分析。</div>
+                    </div>
+                    <!-- 类型笔记 -->
+                    <div class="diary-section">
+                        <div class="diary-label">💭 我的笔记</div>
+                        <div class="diary-text" id="myNote" contenteditable="true" placeholder="记录你的类型偏好、恋爱观变化..." oninput="saveDiaryNote()"></div>
+                    </div>
+                    <!-- 新鲜发现 -->
+                    <div class="diary-section">
+                        <div class="diary-label">✨ 新鲜发现</div>
+                        <div class="diary-text" id="discoveryNote" contenteditable="true" placeholder="今天在Social里发现了什么？" oninput="saveDiaryNote()"></div>
+                    </div>
+                    <!-- 恋爱关键词 -->
+                    <div class="diary-keywords" id="diaryKeywords">
+                        <span class="dk-tag">#主动</span>
+                        <span class="dk-tag">#感受派</span>
+                        <span class="dk-tag">#浪漫主义</span>
+                    </div>
+                </div>
+                <button class="diary-add-btn" onclick="toggleDiaryInput()">+ 写日记</button>
             </div>
         </div>
 
@@ -1711,6 +1812,14 @@ document.addEventListener('touchmove',function(e){
             layers.forEach(function(l){ l.style.filter = ''; l.style.pointerEvents = ''; });
         }, 900);
 
+        // 清除右侧档案区模糊
+        var rightPanel = document.getElementById('signalRight');
+        if (rightPanel) {
+            rightPanel.style.filter = '';
+            rightPanel.style.transform = '';
+            rightPanel.style.opacity = '';
+        }
+
         // 填充右侧档案区
         populateArchive(window._currentMatch);
     };
@@ -1789,6 +1898,19 @@ document.addEventListener('touchmove',function(e){
         if (stack) {
             var topCard = stack.querySelector('.card-stack-layer:first-child');
             if (topCard) topCard.classList.add('swiping-left');
+        }
+        // 右侧档案区同步模糊+右移
+        var rightPanel = document.getElementById('signalRight');
+        if (rightPanel) {
+            rightPanel.style.filter = 'blur(4px)';
+            rightPanel.style.transform = 'translateX(20px)';
+            rightPanel.style.opacity = '0.5';
+            rightPanel.style.transition = 'all 0.4s ease-in-out';
+        }
+        // 重置档案区为空闲状态
+        var archiveBody = document.getElementById('archiveBody');
+        if (archiveBody) {
+            archiveBody.innerHTML = '<div class="archive-idle"><span class="archive-idle-icon">📂</span><span>点击 🎮 开始匹配<br>查看对方档案</span></div>';
         }
         setTimeout(function(){ currentIdx++; renderAll(); }, 350);
     };
@@ -2311,6 +2433,21 @@ window.openMagazineHome = function() {
 
 console.log('💕 Social 主页已就绪');
 
+// ===== 约会前置校验 =====
+window.checkMatchAndGo = function() {
+    var mp = null;
+    try { mp = JSON.parse(localStorage.getItem('social_match_persona')||'null'); } catch(e){}
+    if (mp && mp.name) {
+        window.location.href = '/scene.html';
+    } else {
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;';
+        overlay.onclick = function(e){if(e.target===overlay)overlay.remove();};
+        overlay.innerHTML = '<div style="background:#fff;border-radius:20px;padding:32px;text-align:center;width:min(380px,90vw);box-shadow:0 16px 48px rgba(0,0,0,0.1);" onclick="event.stopPropagation()"><div style="font-size:48px;margin-bottom:12px;">💡</div><div style="font-size:15px;color:#2D1B2E;line-height:1.6;margin-bottom:20px;">先匹配一位心动的 TA 吧！<br>去心动信号站寻找你的缘分</div><button onclick="window.scrollTo({top:document.querySelector(\'.signal-station\').offsetTop-80,behavior:\'smooth\'});this.closest(\'div[style*=fixed]\').remove();" style="padding:10px 24px;border-radius:22px;background:linear-gradient(135deg,#FF6B9D,#D6336C);color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;">去匹配 →</button></div>';
+        document.body.appendChild(overlay);
+    }
+};
+
 // ===== Hero按钮：滚动到主模块区 =====
 function scrollToModules() {
     var target = document.querySelector('.main-modules');
@@ -2318,6 +2455,81 @@ function scrollToModules() {
         target.scrollIntoView({ behavior:'smooth', block:'start' });
     }
 }
+
+// ===== 匹配报告动态填充 =====
+(function initReport() {
+    var el = document.getElementById('reportContent');
+    if (!el) return;
+    var matchPersona = null;
+    try { matchPersona = JSON.parse(localStorage.getItem('social_match_persona') || 'null'); } catch(e) {}
+    var myPersona = null;
+    try { myPersona = JSON.parse(localStorage.getItem('social_my_persona') || 'null'); } catch(e) {}
+
+    if (matchPersona) {
+        var score = Math.floor(78 + Math.random() * 15);
+        var matchName = matchPersona.name || 'TA';
+        el.innerHTML =
+            '<div style="display:flex;align-items:center;gap:24px;">'+
+            '<div style="text-align:center;">'+
+            '<div class="report-score">'+score+'%</div>'+
+            '<div class="report-score-label">综合匹配度</div>'+
+            '</div>'+
+            '<div style="flex:1;">'+
+            '<div style="margin-bottom:8px;">与 <b>'+matchName+'</b> 的契合度分析：</div>'+
+            '<div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">'+
+            (myPersona ? '你的性格「'+(myPersona.personality||'').split('·')[0]+'」与对方的风格形成了互补。' : '')+
+            '建议尝试约会场景来进一步了解彼此。<br>'+
+            '<a href="/report.html" style="color:#D6336C;font-weight:600;">查看完整报告 →</a>'+
+            '</div></div></div>';
+
+        // 更新AI洞察
+        var insight = document.getElementById('aiInsightText');
+        if (insight && myPersona) {
+            var scenes = ['星空漫游','咖啡馆初遇','海边篝火','游园惊梦'];
+            var s = scenes[Math.floor(Math.random()*scenes.length)];
+            insight.textContent = '你最近对「'+matchName+'」产生了匹配。数据显示你们在「'+s+'」场景中可能有较高的互动火花。';
+        }
+    } else {
+        el.innerHTML = '<div style="text-align:center;padding:30px;color:#b0a0a5;">'+
+            '<div style="font-size:36px;margin-bottom:10px;">📊</div>'+
+            '<div>还没有匹配数据</div>'+
+            '<div style="font-size:12px;">去心动信号站开始匹配吧</div>'+
+            '<a href="/report.html" style="display:inline-block;margin-top:14px;color:#D6336C;font-size:13px;">查看历史报告 →</a></div>';
+    }
+})();
+
+// ===== 心动备忘录 =====
+function toggleDiaryInput() {
+    var note = document.getElementById('myNote');
+    note.focus();
+}
+function saveDiaryNote() {
+    var note = document.getElementById('myNote').innerText;
+    var discovery = document.getElementById('discoveryNote').innerText;
+    localStorage.setItem('social_diary', JSON.stringify({note:note, discovery:discovery, time:Date.now()}));
+    updateDiaryKeywords();
+}
+
+function updateDiaryKeywords() {
+    var text = (document.getElementById('myNote').innerText + ' ' + document.getElementById('discoveryNote').innerText).toLowerCase();
+    var allTags = ['#主动','#感受派','#浪漫主义','#安静','#冒险','#社恐','#好奇','#文艺','#理性','#感性','#慢热','#直球'];
+    var matched = allTags.filter(function(t){ return text.indexOf(t.replace('#','')) >= 0; });
+    if (matched.length === 0) matched = ['#主动','#感受派','#浪漫主义'];
+    var kw = document.getElementById('diaryKeywords');
+    if (kw) kw.innerHTML = matched.map(function(t){ return '<span class="dk-tag">'+t+'</span>'; }).join('');
+}
+
+// 恢复日记
+(function initDiary() {
+    var raw = localStorage.getItem('social_diary');
+    if (!raw) return;
+    try {
+        var d = JSON.parse(raw);
+        if (d.note) document.getElementById('myNote').innerText = d.note;
+        if (d.discovery) document.getElementById('discoveryNote').innerText = d.discovery;
+        updateDiaryKeywords();
+    } catch(e) {}
+})();
 
 // ===== 逐字渐变打字动画 =====
 function typeText(el, text) {

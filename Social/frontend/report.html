@@ -1,421 +1,353 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>匹配报告 - Social</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
-    <style>
-        :root {
-            --rose: #d9b2b5; --rose-light: #ecd5d7; --rose-deep: #c49da1;
-            --accent: #c97c87; --accent2: #e8a0a8; --bg: #fdf4f4; --text: #3d2c2e;
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            background: var(--bg);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            min-height: 100vh; -webkit-font-smoothing: antialiased;
-            background-image:
-                radial-gradient(ellipse at 30% 0%, rgba(201,124,135,0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 70% 100%, rgba(232,168,176,0.05) 0%, transparent 50%);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心动档案 - Social</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+:root { --pink:#FF6B9D; --pink-deep:#D6336C; --bg:#fdf4f4; --card:#fff; --text:#2D1B2E; --text-secondary:rgba(50,30,40,0.6); --nav-bg:#ECDDC8; --border:rgba(201,124,135,0.12); }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); font-family:'Inter','PingFang SC',-apple-system,sans-serif; color:var(--text); -webkit-font-smoothing:antialiased; min-height:100vh; overflow-x:hidden; }
 
-        .nav-bar {
-            display:flex; align-items:center; justify-content:space-between;
-            padding:16px 32px; background:rgba(255,250,250,0.7);
-            backdrop-filter:blur(16px); border-bottom:1px solid rgba(201,124,135,0.1);
-        }
-        .nav-logo { font-size:22px; font-weight:700; background:linear-gradient(135deg,#c97c87,#e8a0a8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .nav-back { color:#8b7b7d; text-decoration:none; font-size:14px; }
-        .nav-back:hover { color:#c97c87; }
+.navbar { position:fixed; top:0; left:0; right:0; z-index:100; background:var(--nav-bg); display:flex; align-items:center; justify-content:space-between; padding:0 32px; height:56px; border-bottom:1px solid rgba(0,0,0,0.04); }
+.nav-logo { font-size:20px; font-weight:700; background:linear-gradient(135deg,#D6336C,#FF6B9D); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-decoration:none; }
+.nav-links { display:flex; gap:28px; }
+.nav-link { color:#fff; text-decoration:none; font-size:14px; text-shadow:0 1px 2px rgba(0,0,0,0.08); font-family:'Noto Serif SC',serif; }
 
-        .main-container { max-width:900px; margin:0 auto; padding:40px 24px 60px; }
+/* 粒子背景 */
+.particle-bg { position:fixed; inset:0; z-index:0; pointer-events:none; }
+.particle-bg canvas { display:block; }
 
-        /* ====== 头部总分 ====== */
-        .score-hero {
-            text-align:center; margin-bottom:40px;
-            animation: fadeSlideIn 0.6s ease;
-        }
-        @keyframes fadeSlideIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.container { max-width:900px; margin:0 auto; padding:80px 24px 60px; position:relative; z-index:1; }
 
-        .score-ring-wrap {
-            position:relative; display:inline-block; margin-bottom:16px;
-        }
-        .score-ring {
-            transform:rotate(-90deg);
-        }
-        .score-ring .bg-circle {
-            fill:none; stroke:#f0e0e3; stroke-width:10;
-        }
-        .score-ring .fg-circle {
-            fill:none; stroke:url(#scoreGrad); stroke-width:10; stroke-linecap:round;
-            transition:stroke-dashoffset 1.5s cubic-bezier(0.25,0.46,0.45,0.94);
-        }
-        .score-number {
-            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-            font-size:56px; font-weight:800; color:var(--text);
-        }
-        .score-label {
-            font-size:14px; color:#a89497; margin-top:-8px;
-        }
+/* 顶部摘要 */
+.summary-card {
+    background:rgba(255,255,255,0.55); backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,0.5); border-radius:20px;
+    padding:28px; margin-bottom:20px; text-align:center;
+    box-shadow:0 4px 20px rgba(233,30,99,0.04);
+}
+.summary-avatar {
+    width:72px; height:72px; border-radius:50%; margin:0 auto 12px;
+    display:flex; align-items:center; justify-content:center; font-size:32px;
+    background:linear-gradient(135deg,#FFE4EC,#FF6B9D);
+    box-shadow:0 0 0 4px rgba(255,107,157,0.12), 0 0 24px rgba(255,107,157,0.08);
+}
+.summary-name { font-size:22px; font-weight:700; }
+.summary-sub { font-size:13px; color:#a89497; margin-top:4px; }
+.summary-tags { display:flex; gap:6px; justify-content:center; margin-top:10px; flex-wrap:wrap; }
+.summary-tag { padding:3px 10px; border-radius:12px; font-size:11px; background:rgba(255,107,157,0.06); color:#D6336C; border:1px solid rgba(255,107,157,0.1); }
 
-        /* ====== 双方头像 ====== */
-        .couple-row {
-            display:flex; align-items:center; justify-content:center; gap:40px;
-            margin-bottom:40px;
-        }
-        .person-badge {
-            text-align:center; animation:fadeSlideIn 0.6s ease 0.2s both;
-        }
-        .person-avatar {
-            width:72px; height:72px; border-radius:50%;
-            display:flex; align-items:center; justify-content:center;
-            font-size:32px; margin:0 auto 8px;
-            box-shadow:0 4px 16px rgba(0,0,0,0.06);
-        }
-        .person-name { font-size:16px; font-weight:600; color:var(--text); }
-        .person-trait { font-size:12px; color:#a89497; margin-top:2px; }
+/* 双栏 */
+.dual-col { display:flex; gap:20px; }
+.col-left { flex:0 0 340px; }
+.col-right { flex:1; }
 
-        .vs-badge {
-            width:48px; height:48px; border-radius:50%;
-            background:linear-gradient(135deg,#c97c87,#e8a0a8);
-            color:#fff; display:flex; align-items:center; justify-content:center;
-            font-size:14px; font-weight:700;
-            box-shadow:0 4px 16px rgba(201,124,135,0.25);
-        }
+/* 左侧：分数卡 */
+.score-card {
+    background:rgba(255,255,255,0.55); backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,0.5); border-radius:20px;
+    padding:32px 24px; text-align:center;
+    box-shadow:0 4px 20px rgba(233,30,99,0.04); margin-bottom:20px;
+}
+.score-ring-wrap { position:relative; display:inline-block; margin-bottom:8px; }
+.score-ring-wrap svg { transform:rotate(-90deg); }
+.score-number { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.score-big { font-size:48px; font-weight:800; background:linear-gradient(135deg,#D6336C,#FF6B9D); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.score-unit { font-size:12px; color:#a89497; }
+.score-label { font-size:14px; color:var(--text-secondary); margin-top:4px; }
 
-        /* ====== 维度评分卡片 ====== */
-        .section-card {
-            background:#fff; border-radius:20px; padding:28px;
-            box-shadow:0 2px 16px rgba(0,0,0,0.03);
-            margin-bottom:24px;
-            border:1px solid rgba(201,124,135,0.06);
-            animation:fadeSlideIn 0.6s ease 0.3s both;
-        }
-        .section-title {
-            font-size:18px; font-weight:700; color:var(--text); margin-bottom:20px;
-            display:flex; align-items:center; gap:8px;
-        }
-        .section-title .icon { font-size:20px; }
+/* 好感度星级 */
+.affinity-stars { font-size:28px; margin:12px 0 4px; letter-spacing:4px; }
+.affinity-text { font-size:12px; color:#a89497; }
+.affinity-bar { height:8px; background:#f5e8ea; border-radius:4px; overflow:hidden; margin:8px 0; }
+.affinity-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#FF6B9D,#D6336C); }
 
-        /* 维度条 */
-        .dimension-item { margin-bottom:18px; }
-        .dim-header { display:flex; justify-content:space-between; margin-bottom:6px; }
-        .dim-name { font-size:14px; font-weight:600; color:var(--text); }
-        .dim-score { font-size:14px; font-weight:700; color:#c97c87; }
-        .dim-bar { height:8px; border-radius:4px; background:#f5e8ea; overflow:hidden; }
-        .dim-fill {
-            height:100%; border-radius:4px;
-            transition:width 1.2s cubic-bezier(0.25,0.46,0.45,0.94);
-        }
+/* 右侧：AI洞察 */
+.insight-card {
+    background:rgba(255,255,255,0.55); backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,0.5); border-radius:20px;
+    padding:24px; margin-bottom:20px;
+    box-shadow:0 4px 20px rgba(233,30,99,0.04);
+}
+.insight-title { font-size:16px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.insight-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid rgba(201,124,135,0.06); }
+.insight-item:last-child { border-bottom:none; }
+.insight-icon { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; background:rgba(255,107,157,0.06); }
+.insight-text { font-size:13px; color:var(--text); line-height:1.6; flex:1; }
 
-        /* ====== 雷达图 ====== */
-        .radar-wrap {
-            display:flex; justify-content:center; padding:8px 0;
-        }
-        canvas#radarChart { max-width:320px; width:100%; }
+/* 底部 */
+.bottom-actions { display:flex; gap:14px; justify-content:center; margin-top:8px; }
+.btn { padding:12px 28px; border-radius:25px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s; font-family:inherit; border:none; }
+.btn-primary { background:linear-gradient(135deg,#FF6B9D,#D6336C); color:#fff; box-shadow:0 4px 16px rgba(255,107,157,0.2); }
+.btn-primary:hover { transform:translateY(-2px); }
+.btn-outline { background:transparent; border:1.5px solid rgba(201,124,135,0.2); color:var(--text-secondary); }
+.btn-outline:hover { border-color:#D6336C; }
 
-        /* ====== 对话亮点 ====== */
-        .highlight-item {
-            padding:16px; border-radius:14px; margin-bottom:12px;
-            border-left:3px solid #c97c87;
-            background:linear-gradient(90deg, rgba(201,124,135,0.04), transparent);
-        }
-        .highlight-moment { font-size:12px; color:#a89497; margin-bottom:4px; }
-        .highlight-text { font-size:14px; color:var(--text); line-height:1.6; font-style:italic; }
+/* 历史弹窗 */
+.history-modal {
+    position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.35);
+    display:flex; align-items:center; justify-content:center;
+}
+.history-box { background:rgba(255,255,255,0.95); backdrop-filter:blur(16px); border-radius:20px; padding:28px; width:min(500px,90vw); max-height:70vh; overflow-y:auto; }
+.history-item { padding:12px; border-bottom:1px solid rgba(201,124,135,0.06); font-size:13px; display:flex; align-items:center; gap:10px; }
+.history-item:last-child { border-bottom:none; }
 
-        /* ====== 改进建议 ====== */
-        .suggestion-item {
-            display:flex; gap:12px; padding:14px 0; border-bottom:1px solid #f5e8ea;
-        }
-        .suggestion-item:last-child { border-bottom:none; }
-        .suggestion-icon {
-            width:36px; height:36px; border-radius:50%; flex-shrink:0;
-            display:flex; align-items:center; justify-content:center; font-size:18px;
-        }
-        .suggestion-text { font-size:14px; color:var(--text); line-height:1.6; }
+/* 空状态 */
+.empty-state { text-align:center; padding:60px 20px; }
+.empty-icon { font-size:60px; margin-bottom:16px; }
+.empty-title { font-size:20px; font-weight:700; color:var(--text); margin-bottom:8px; }
+.empty-desc { font-size:14px; color:var(--text-secondary); margin-bottom:24px; }
 
-        /* 按钮 */
-        .action-row { display:flex; gap:16px; margin-top:32px; animation:fadeSlideIn 0.6s ease 0.5s both; }
-        .btn {
-            flex:1; padding:14px 24px; border-radius:50px; font-size:16px; font-weight:600;
-            text-align:center; cursor:pointer; text-decoration:none; transition:all 0.3s ease;
-        }
-        .btn-primary {
-            background:linear-gradient(135deg,#c97c87,#e8a0a8); color:#fff;
-            border:none; box-shadow:0 8px 24px rgba(201,124,135,0.25);
-        }
-        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 14px 36px rgba(201,124,135,0.35); }
-        .btn-outline {
-            background:#fff; color:#c97c87; border:1.5px solid rgba(201,124,135,0.3);
-        }
-        .btn-outline:hover { border-color:#c97c87; background:rgba(201,124,135,0.03); }
+.loading-dots { display:inline-flex; gap:4px; }
+.loading-dots span { width:5px; height:5px; border-radius:50%; background:#D6336C; animation:db 1.4s infinite; }
+.loading-dots span:nth-child(2){animation-delay:0.2s;} .loading-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes db { 0%,80%,100%{transform:scale(0);opacity:0.3;} 40%{transform:scale(1);opacity:1;} }
 
-        @media (max-width:640px) {
-            .couple-row { gap:24px; }
-            .person-avatar { width:56px; height:56px; font-size:24px; }
-            .action-row { flex-direction:column; }
-        }
-    </style>
+@media (max-width:700px) { .dual-col { flex-direction:column; } .col-left { flex:auto; } .navbar { padding:0 16px; } }
+</style>
 </head>
 <body>
 
-    <nav class="nav-bar">
-        <span class="nav-logo">Social</span>
-        <a href="/scene.html" class="nav-back"><i class="fa fa-arrow-left"></i> 重新选择场景</a>
-    </nav>
+<!-- 粒子背景 -->
+<div class="particle-bg"><canvas id="particleCanvas"></canvas></div>
 
-    <div class="main-container">
+<nav class="navbar">
+    <a href="/" class="nav-logo">Social</a>
+    <div class="nav-links">
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="workshop.html" class="nav-link">捏个分身</a>
+        <a href="scene.html" class="nav-link">开始约会</a>
+        <a href="report.html" class="nav-link">看看缘分</a>
+    </div>
+</nav>
 
-        <!-- ====== 总分头部 ====== -->
-        <div class="score-hero">
-            <div class="score-ring-wrap">
-                <svg class="score-ring" width="180" height="180" viewBox="0 0 180 180">
-                    <defs>
-                        <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#c97c87"/>
-                            <stop offset="100%" stop-color="#e8a0a8"/>
-                        </linearGradient>
-                    </defs>
-                    <circle class="bg-circle" cx="90" cy="90" r="80"/>
-                    <circle class="fg-circle" id="scoreCircle" cx="90" cy="90" r="80"
-                        stroke-dasharray="502.65" stroke-dashoffset="502.65"/>
-                </svg>
-                <div class="score-number" id="scoreNum">82</div>
-            </div>
-            <div class="score-label">综合好感度评分</div>
-        </div>
+<div class="container">
 
-        <!-- ====== 双方信息 ====== -->
-        <div class="couple-row">
-            <div class="person-badge">
-                <div class="person-avatar" style="background:linear-gradient(135deg,#fce4ec,#f8bbd0);">🧑‍💻</div>
-                <div class="person-name" id="personAName">张三</div>
-                <div class="person-trait" id="personATrait">幽默风趣 · 理性逻辑</div>
-            </div>
-            <div class="vs-badge">VS</div>
-            <div class="person-badge">
-                <div class="person-avatar" style="background:linear-gradient(135deg,#e8eaf6,#c5cae9);">👩‍🎨</div>
-                <div class="person-name" id="personBName">李四</div>
-                <div class="person-trait" id="personBTrait">活泼开朗 · 温暖细腻</div>
-            </div>
-        </div>
-
-        <!-- ====== 四维评分 ====== -->
-        <div class="section-card">
-            <div class="section-title"><span class="icon">📊</span> 四维好感度分析</div>
-            <div id="dimensions">
-                <div class="dimension-item">
-                    <div class="dim-header"><span class="dim-name">💬 话题共鸣</span><span class="dim-score">85</span></div>
-                    <div class="dim-bar"><div class="dim-fill" style="width:0%;background:linear-gradient(90deg,#c97c87,#e8a0a8);" data-width="85%"></div></div>
-                    <div style="font-size:12px;color:#a89497;margin-top:4px;">音乐、旅行、美食高度重合，聊天自然流畅</div>
-                </div>
-                <div class="dimension-item">
-                    <div class="dim-header"><span class="dim-name">🔄 对话流畅度</span><span class="dim-score">78</span></div>
-                    <div class="dim-bar"><div class="dim-fill" style="width:0%;background:linear-gradient(90deg,#d9b2b5,#c97c87);" data-width="78%"></div></div>
-                    <div style="font-size:12px;color:#a89497;margin-top:4px;">较少冷场，但偶尔出现话题衔接不够顺畅</div>
-                </div>
-                <div class="dimension-item">
-                    <div class="dim-header"><span class="dim-name">💗 情绪兼容</span><span class="dim-score">90</span></div>
-                    <div class="dim-bar"><div class="dim-fill" style="width:0%;background:linear-gradient(90deg,#c49da1,#d9b2b5);" data-width="90%"></div></div>
-                    <div style="font-size:12px;color:#a89497;margin-top:4px;">情绪表达频率和强度高度匹配，相处舒适自然</div>
-                </div>
-                <div class="dimension-item">
-                    <div class="dim-header"><span class="dim-name">🎭 风格契合</span><span class="dim-score">75</span></div>
-                    <div class="dim-bar"><div class="dim-fill" style="width:0%;background:linear-gradient(90deg,#ecd5d7,#d9b2b5);" data-width="75%"></div></div>
-                    <div style="font-size:12px;color:#a89497;margin-top:4px;">沟通方式有差异但可以互补，建议多关注对方节奏</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ====== 雷达图 ====== -->
-        <div class="section-card">
-            <div class="section-title"><span class="icon">🎯</span> 兼容性雷达图</div>
-            <div class="radar-wrap">
-                <canvas id="radarChart" width="320" height="320"></canvas>
-            </div>
-        </div>
-
-        <!-- ====== 对话亮点 ====== -->
-        <div class="section-card">
-            <div class="section-title"><span class="icon">✨</span> 对话亮点回顾</div>
-            <div class="highlight-item">
-                <div class="highlight-moment">🕐 第 3 分钟</div>
-                <div class="highlight-text">"你说你喜欢旅行？我也超爱！上次去大理的时候..." —— 共同兴趣引发热烈讨论，对话情绪明显升温</div>
-            </div>
-            <div class="highlight-item">
-                <div class="highlight-moment">🕐 第 7 分钟</div>
-                <div class="highlight-text">两人同时打出"哈哈哈哈哈"—— 幽默频率意外吻合，笑点出奇一致</div>
-            </div>
-            <div class="highlight-item">
-                <div class="highlight-moment">🕐 第 12 分钟</div>
-                <div class="highlight-text">关于未来的讨论中，价值观深度契合："我也觉得家庭比事业更重要"</div>
-            </div>
-        </div>
-
-        <!-- ====== 改进建议 ====== -->
-        <div class="section-card">
-            <div class="section-title"><span class="icon">💡</span> AI 改进建议</div>
-            <div class="suggestion-item">
-                <div class="suggestion-icon" style="background:#fce4ec;">🌱</div>
-                <div class="suggestion-text"><strong>多分享个人故事：</strong>对话中分析型话题偏多，适当加入个人经历会让交流更有温度。</div>
-            </div>
-            <div class="suggestion-item">
-                <div class="suggestion-icon" style="background:#e8eaf6;">🎯</div>
-                <div class="suggestion-text"><strong>注意节奏变化：</strong>对方偏向感性表达时，可以放慢节奏、多一些情感回应，少一些理性分析。</div>
-            </div>
-            <div class="suggestion-item">
-                <div class="suggestion-icon" style="background:#fff3e0;">💫</div>
-                <div class="suggestion-text"><strong>下次试试聊聊梦想：</strong>两人在"理想生活"这个话题上还有挖掘空间，下次约会可以深入聊聊。</div>
-            </div>
-        </div>
-
-        <!-- ====== 操作按钮 ====== -->
-        <div class="action-row">
-            <a href="dating.html" class="btn btn-primary"><i class="fa fa-heart"></i> 继续下一场约会</a>
-            <a href="scene.html" class="btn btn-outline"><i class="fa fa-globe"></i> 换个场景再试</a>
-        </div>
-
+    <!-- ====== 空状态 ====== -->
+    <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="empty-icon">📂</div>
+        <div class="empty-title">还没有约会记录</div>
+        <div class="empty-desc">去心动信号站匹配一位 TA，开始你的第一次约会吧</div>
+        <a href="/" class="btn btn-primary">💕 去匹配</a>
     </div>
 
-    <script>
-    // ===== Mock 数据（后续换成 fetch API） =====
-    var MOCK_DATA = {
-        personA: { name: '张三', trait: '幽默风趣 · 理性逻辑', avatar: '🧑‍💻', color: '#f8bbd0' },
-        personB: { name: '李四', trait: '活泼开朗 · 温暖细腻', avatar: '👩‍🎨', color: '#c5cae9' },
-        totalScore: 82,
-        dimensions: [
-            { name: '话题共鸣', score: 85, color: '#c97c87' },
-            { name: '对话流畅度', score: 78, color: '#d9b2b5' },
-            { name: '情绪兼容', score: 90, color: '#c49da1' },
-            { name: '风格契合', score: 75, color: '#ecd5d7' }
-        ]
-    };
+    <!-- ====== 主内容 ====== -->
+    <div id="mainContent">
+        <!-- 顶部摘要 -->
+        <div class="summary-card">
+            <div class="summary-avatar" id="matchAvatar">👤</div>
+            <div class="summary-name" id="summaryName">---</div>
+            <div class="summary-sub" id="summarySub">与「---」的约会报告</div>
+            <div class="summary-tags" id="summaryTags"></div>
+        </div>
 
-    // ===== 页面渲染 =====
-    function loadReport(data) {
-        // Mock 填充
-        data = data || MOCK_DATA;
+        <!-- 双栏 -->
+        <div class="dual-col">
+            <!-- 左：分数 -->
+            <div class="col-left">
+                <div class="score-card">
+                    <div class="score-ring-wrap">
+                        <svg width="160" height="160" viewBox="0 0 160 160">
+                            <defs>
+                                <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#D6336C"/><stop offset="100%" stop-color="#FF6B9D"/>
+                                </linearGradient>
+                                <filter id="glow">
+                                    <feGaussianBlur stdDeviation="3" result="blur"/>
+                                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                </filter>
+                            </defs>
+                            <circle cx="80" cy="80" r="66" fill="none" stroke="#f5e8ea" stroke-width="8"/>
+                            <circle cx="80" cy="80" r="66" fill="none" stroke="url(#scoreGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="415" stroke-dashoffset="415" id="scoreCircle" filter="url(#glow)"/>
+                        </svg>
+                        <div class="score-number">
+                            <span class="score-big" id="scoreBig">--</span>
+                            <span class="score-unit">综合匹配度</span>
+                        </div>
+                    </div>
+                    <div class="affinity-stars" id="affinityStars">☆☆☆☆☆</div>
+                    <div class="affinity-text">好感度：<span id="affinityVal">--</span> 分</div>
+                    <div class="affinity-bar"><div class="affinity-fill" id="affinityBar" style="width:0%"></div></div>
+                </div>
+            </div>
 
-        document.getElementById('personAName').textContent = data.personA.name;
-        document.getElementById('personATrait').textContent = data.personA.trait;
-        document.getElementById('personBName').textContent = data.personB.name;
-        document.getElementById('personBTrait').textContent = data.personB.trait;
-        document.getElementById('scoreNum').textContent = data.totalScore;
+            <!-- 右：AI洞察 -->
+            <div class="col-right">
+                <div class="insight-card">
+                    <div class="insight-title">🤖 AI 深度洞察</div>
+                    <div id="insightList">
+                        <div class="insight-item"><div class="insight-icon">💡</div><div class="insight-text" style="color:#c0b0b5;"><span class="loading-dots"><span></span><span></span><span></span></span> AI 分析中...</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        // 环形动画
-        setTimeout(function() {
-            var circumference = 502.65;
-            var offset = circumference - (data.totalScore / 100) * circumference;
-            document.getElementById('scoreCircle').style.strokeDashoffset = offset;
-        }, 300);
+        <!-- 底部按钮 -->
+        <div class="bottom-actions">
+            <button class="btn btn-outline" onclick="showHistory()">📖 查看历史记录</button>
+            <a href="/" class="btn btn-primary">💕 再次匹配</a>
+        </div>
+    </div>
+</div>
 
-        // 维度条动画
-        setTimeout(function() {
-            document.querySelectorAll('.dim-fill').forEach(function(el) {
-                el.style.width = el.dataset.width;
-            });
-        }, 500);
+<script>
+var DEEPSEEK_KEY = 'sk-your-api-key-here';
+var DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
 
-        // 雷达图
-        drawRadar(data.dimensions);
+// ===== 粒子背景 =====
+(function initParticles() {
+    var canvas = document.getElementById('particleCanvas');
+    var ctx = canvas.getContext('2d');
+    var particles = [];
+    var colors = ['rgba(255,107,157,0.15)','rgba(255,140,170,0.12)','rgba(200,120,220,0.1)'];
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    for (var i=0;i<60;i++) particles.push({
+        x:Math.random()*canvas.width, y:Math.random()*canvas.height,
+        r:1+Math.random()*4, dx:(Math.random()-0.5)*0.3, dy:(Math.random()-0.5)*0.3-0.1,
+        color:colors[Math.floor(Math.random()*colors.length)]
+    });
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        for (var i=0;i<particles.length;i++) {
+            var p=particles[i]; p.x+=p.dx; p.y+=p.dy;
+            if(p.x<-10)p.x=canvas.width+10; if(p.x>canvas.width+10)p.x=-10;
+            if(p.y<-10)p.y=canvas.height+10; if(p.y>canvas.height+10)p.y=-10;
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=p.color; ctx.fill();
+        }
+        requestAnimationFrame(draw);
     }
+    draw();
+})();
 
-    // ===== Canvas 雷达图 =====
-    function drawRadar(dimensions) {
-        var canvas = document.getElementById('radarChart');
-        var ctx = canvas.getContext('2d');
-        var w = canvas.width, h = canvas.height;
-        var cx = w/2, cy = h/2, steps = 5, maxR = 130;
-        var n = dimensions.length;
+// ===== 加载真实数据 =====
+var myPersona = null, matchPersona = null, lastDate = null, dateHistory = [];
+try { myPersona = JSON.parse(localStorage.getItem('social_my_persona')||'null'); } catch(e){}
+try { matchPersona = JSON.parse(localStorage.getItem('social_match_persona')||'null'); } catch(e){}
+try { lastDate = JSON.parse(localStorage.getItem('social_last_date')||'null'); } catch(e){}
+try { dateHistory = JSON.parse(localStorage.getItem('social_date_history')||'[]'); } catch(e){}
 
-        ctx.clearRect(0, 0, w, h);
+var hasMatch = !!(matchPersona && matchPersona.name);
+var hasHistory = dateHistory.length > 0;
 
-        // 背景网格
-        for (var s = 1; s <= steps; s++) {
-            var r = (maxR / steps) * s;
-            ctx.beginPath();
-            for (var i = 0; i < n; i++) {
-                var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
-                var x = cx + Math.cos(angle) * r;
-                var y = cy + Math.sin(angle) * r;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.closePath();
-            ctx.strokeStyle = s === steps ? 'rgba(201,124,135,0.15)' : 'rgba(201,124,135,0.08)';
-            ctx.lineWidth = s === steps ? 1.5 : 1;
-            ctx.stroke();
+if (!hasMatch && !hasHistory) {
+    document.getElementById('mainContent').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'block';
+} else {
+    document.getElementById('emptyState').style.display = 'none';
+    renderReport();
+}
+
+// ===== 渲染 =====
+function renderReport() {
+    var mName = matchPersona ? matchPersona.name : (dateHistory.length>0 && dateHistory[0].matchPersona ? dateHistory[0].matchPersona.name : 'TA');
+    var mAge = matchPersona ? matchPersona.age : '';
+    var mPersonality = matchPersona ? matchPersona.personality : '';
+    var mTags = matchPersona ? (matchPersona.tags||matchPersona.interests||[]).slice(0,4) : [];
+
+    // 顶部
+    document.getElementById('matchAvatar').innerHTML = '<span>'+(matchPersona&&matchPersona.gender==='male'?'🧑‍💻':'👩‍🎨')+'</span>';
+    document.getElementById('summaryName').textContent = mName + (mAge?' · '+mAge+'岁':'');
+    document.getElementById('summarySub').textContent = '与「'+mName+'」的约会报告';
+    document.getElementById('summaryTags').innerHTML = mTags.map(function(t){return '<span class="summary-tag">'+t+'</span>';}).join('');
+
+    // 综合分数
+    var score = lastDate ? lastDate.score : (matchPersona ? 70+Math.floor(Math.random()*20) : 50);
+    var affinity = lastDate ? Math.round(lastDate.score * 0.85) : Math.floor(score * 0.7 + Math.random()*20);
+
+    var circ = 415;
+    document.getElementById('scoreCircle').setAttribute('stroke-dashoffset', circ - (score/100)*circ);
+    document.getElementById('scoreBig').textContent = score + '%';
+
+    // 星级
+    var starCount = Math.round(affinity / 20);
+    var starsHTML = '';
+    for (var i=0;i<5;i++) starsHTML += i<starCount?'❤️':'🤍';
+    document.getElementById('affinityStars').innerHTML = starsHTML;
+    document.getElementById('affinityVal').textContent = affinity;
+    document.getElementById('affinityBar').style.width = affinity+'%';
+
+    // AI洞察
+    generateInsights();
+}
+
+// ===== AI洞察 =====
+async function generateInsights() {
+    var list = document.getElementById('insightList');
+    var mName = matchPersona ? matchPersona.name : 'TA';
+    var myName = myPersona ? myPersona.name : '你';
+
+    var prompt = '你是Social平台的AI约会分析师。请根据以下数据生成3条简短洞察（每条不超过50字，带图标emoji前缀），直接输出纯文本，每条一行。\n\n';
+    if (myPersona) prompt += '用户：'+myName+'，性格：'+(myPersona.personality||'')+'，MBTI：'+(myPersona.mbti||'')+'\n';
+    if (matchPersona) prompt += '匹配对象：'+mName+'，性格：'+(mPersona.personality||'')+'\n';
+    if (lastDate) prompt += '最近约会：'+lastDate.scene+'，匹配度：'+lastDate.score+'%\n';
+    if (dateHistory.length>0) prompt += '约会历史：共'+dateHistory.length+'次约会\n';
+    prompt += '请生成洞察。格式示例：\n🧩 你们的性格类型形成了天然的互补。\n💡 在星空漫游场景中的互动表明你对浪漫细节有偏好。\n🎯 建议下次尝试双人合作场景以增加互动。';
+
+    try {
+        var resp = await fetch(DEEPSEEK_URL, {
+            method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+DEEPSEEK_KEY},
+            body:JSON.stringify({model:'deepseek-chat',messages:[{role:'user',content:prompt}],temperature:0.7,max_tokens:400})
+        });
+        var data = await resp.json();
+        var text = data.choices[0].message.content;
+        var lines = text.split('\n').filter(function(l){return l.trim();}).slice(0,4);
+        var icons = ['🧩','💡','🎯','✨'];
+        list.innerHTML = lines.map(function(l,i){
+            var clean = l.replace(/^[🧩💡🎯✨]\s*/, '');
+            return '<div class="insight-item"><div class="insight-icon">'+icons[i]+'</div><div class="insight-text">'+clean+'</div></div>';
+        }).join('');
+    } catch(e) {
+        // 规则引擎兜底
+        var rules = [];
+        if (myPersona && matchPersona) {
+            var myTrait = (myPersona.personality||'').split('·')[0];
+            var mTrait = (matchPersona.personality||'').split('·')[0];
+            rules.push({icon:'🧩',text:'你的「'+myTrait+'」与「'+mName+'」的「'+mTrait+'」形成了天然的互补。'});
+            rules.push({icon:'💡',text:'数据显示你们在兴趣匹配上有较高重合度，这是长期关系的重要基础。'});
+            rules.push({icon:'🎯',text:'建议尝试更多互动型场景，以进一步了解彼此的沟通节奏。'});
         }
-
-        // 轴线
-        for (var i = 0; i < n; i++) {
-            var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(cx + Math.cos(angle) * maxR, cy + Math.sin(angle) * maxR);
-            ctx.strokeStyle = 'rgba(201,124,135,0.1)';
-            ctx.stroke();
-        }
-
-        // 数据区域
-        ctx.beginPath();
-        for (var i = 0; i < n; i++) {
-            var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
-            var value = dimensions[i].score / 100;
-            var x = cx + Math.cos(angle) * maxR * value;
-            var y = cy + Math.sin(angle) * maxR * value;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(201,124,135,0.15)';
-        ctx.fill();
-        ctx.strokeStyle = '#c97c87';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // 数据点 + 标签
-        for (var i = 0; i < n; i++) {
-            var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
-            var value = dimensions[i].score / 100;
-            var x = cx + Math.cos(angle) * maxR * value;
-            var y = cy + Math.sin(angle) * maxR * value;
-
-            // 点
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = '#c97c87';
-            ctx.fill();
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // 标签
-            var lx = cx + Math.cos(angle) * (maxR + 28);
-            var ly = cy + Math.sin(angle) * (maxR + 28);
-            ctx.fillStyle = '#3d2c2e';
-            ctx.font = 'bold 13px -apple-system, "PingFang SC", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(dimensions[i].name, lx, ly);
-
-            // 分数
-            var sx = cx + Math.cos(angle) * (maxR * value + 16);
-            var sy = cy + Math.sin(angle) * (maxR * value + 16);
-            ctx.fillStyle = '#c97c87';
-            ctx.font = 'bold 11px -apple-system, "PingFang SC", sans-serif';
-            ctx.fillText(dimensions[i].score, sx, sy);
-        }
+        if (dateHistory.length>0) rules.push({icon:'✨',text:'已完成 '+dateHistory.length+' 次约会，正反馈率 '+(dateHistory.filter(function(d){return d.affection>0;}).length)+' 次。'});
+        if (rules.length===0) rules.push({icon:'💡',text:'完成第一次约会后，AI将为你生成个性化分析。'});
+        list.innerHTML = rules.map(function(r){return '<div class="insight-item"><div class="insight-icon">'+r.icon+'</div><div class="insight-text">'+r.text+'</div></div>';}).join('');
     }
+}
 
-    // ===== 启动 =====
-    loadReport();
+// ===== 历史记录 =====
+window.showHistory = function() {
+    var overlay = document.createElement('div');
+    overlay.className = 'history-modal';
+    overlay.onclick = function(e){if(e.target===overlay)overlay.remove();};
 
-    console.log('📊 匹配报告页就绪');
-    console.log('📋 Mock模式：使用示例数据渲染');
-    console.log('🔌 后续接入：fetch /api/match/report → JSON → loadReport()');
-    </script>
+    var html = '<div class="history-box" onclick="event.stopPropagation()">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">'+
+        '<h3 style="font-size:16px;">📜 约会历史</h3>'+
+        '<button onclick="this.closest(\'.history-modal\').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#999;">✕</button></div>';
+
+    if (dateHistory.length === 0) {
+        html += '<div style="text-align:center;padding:30px;color:#b0a0a5;">暂无约会记录</div>';
+    } else {
+        dateHistory.slice(0,15).forEach(function(d){
+            var dName = d.matchPersona ? d.matchPersona.name : 'TA';
+            var dScene = d.sceneName || d.scene || '未知场景';
+            var dScore = d.matchScore || Math.round((d.affection+100)/2) || '?';
+            var dTime = d.time ? new Date(d.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+            html += '<div class="history-item">'+
+                '<span style="font-size:20px;">'+(d.endType==='主动退出'?'🚪':(d.affection>30?'💕':'👋'))+'</span>'+
+                '<div style="flex:1;"><b>'+dName+'</b> · '+dScene+'</div>'+
+                '<span style="color:#D6336C;font-weight:700;">'+dScore+'分</span>'+
+                '<span style="font-size:11px;color:#c0b0b5;">'+dTime+'</span></div>';
+        });
+    }
+    html += '</div>';
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+};
+
+console.log('📊 心动档案 · 动态数据版');
+</script>
 </body>
 </html>

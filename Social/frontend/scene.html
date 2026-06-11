@@ -1,281 +1,396 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>选择约会场景 - Social</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
-    <style>
-        :root {
-            --rose: #d9b2b5; --rose-light: #ecd5d7; --rose-deep: #c49da1;
-            --accent: #c97c87; --accent2: #e8a0a8; --bg: #fdf4f4;
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            background: var(--bg);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            min-height: 100vh; -webkit-font-smoothing: antialiased;
-            background-image:
-                radial-gradient(ellipse at 35% 0%, rgba(201,124,135,0.07) 0%, transparent 55%),
-                radial-gradient(ellipse at 75% 100%, rgba(232,168,176,0.05) 0%, transparent 50%);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>约会场景 - Social</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+:root { --pink:#FF6B9D; --pink-deep:#D6336C; --bg:#fdf4f4; --card:#fff; --text:#2D1B2E; --text-secondary:rgba(50,30,40,0.6); --nav-bg:#ECDDC8; --border:rgba(201,124,135,0.12); }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); font-family:'Inter','PingFang SC',-apple-system,sans-serif; color:var(--text); -webkit-font-smoothing:antialiased; min-height:100vh; }
 
-        /* 导航 */
-        .nav-bar {
-            display:flex; align-items:center; justify-content:space-between;
-            padding:16px 32px; background:rgba(255,250,250,0.7);
-            backdrop-filter:blur(16px); border-bottom:1px solid rgba(201,124,135,0.1);
-        }
-        .nav-logo { font-size:22px; font-weight:700; background:linear-gradient(135deg,#c97c87,#e8a0a8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .nav-back { color:#8b7b7d; text-decoration:none; font-size:14px; transition:color 0.2s; }
-        .nav-back:hover { color:#c97c87; }
+.navbar { position:fixed; top:0; left:0; right:0; z-index:100; background:var(--nav-bg); display:flex; align-items:center; justify-content:space-between; padding:0 32px; height:56px; border-bottom:1px solid rgba(0,0,0,0.04); }
+.nav-logo { font-size:20px; font-weight:700; background:linear-gradient(135deg,#D6336C,#FF6B9D); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-decoration:none; }
+.nav-links { display:flex; gap:28px; }
+.nav-link { color:#fff; text-decoration:none; font-size:14px; text-shadow:0 1px 2px rgba(0,0,0,0.08); font-family:'Noto Serif SC',serif; }
 
-        .main-container { max-width:1100px; margin:0 auto; padding:40px 24px 60px; }
+.main-container { max-width:900px; margin:0 auto; padding:80px 24px 60px; }
 
-        /* 标题 */
-        .page-title { text-align:center; margin-bottom:36px; }
-        .page-title h1 { font-size:32px; font-weight:700; color:#3d2c2e; }
-        .page-title p { font-size:15px; color:#a89497; margin-top:6px; }
+/* 大场景卡片 */
+.scene-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
+.scene-big-card {
+    position:relative; border-radius:20px; padding:28px; cursor:pointer;
+    border:2px solid var(--border); transition:all 0.35s;
+    overflow:hidden; min-height:160px;
+}
+.scene-big-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,0.06); }
+.scene-big-card.selected { border-color:var(--pink-deep); box-shadow:0 0 0 3px rgba(255,107,157,0.15); }
+.scene-bg-campus { background:linear-gradient(135deg, #fce4ec 0%, #f8bbd0 30%, #fff9c4 70%, #fdf4f4 100%); }
+.scene-bg-workplace { background:linear-gradient(135deg, #e8eaf6 0%, #c5cae9 30%, #e3f2fd 70%, #fdf4f4 100%); }
+.scene-bg-dating { background:linear-gradient(135deg, #fce4ec 0%, #ffe0b2 40%, #fff8e1 70%, #fdf4f4 100%); }
+.scene-bg-storm { background:linear-gradient(135deg, #263238 0%, #37474f 30%, #546e7a 70%, #fdf4f4 100%); color:#fff; }
+.scene-icon { font-size:44px; margin-bottom:10px; display:block; }
+.scene-name { font-size:20px; font-weight:700; margin-bottom:4px; }
+.scene-desc { font-size:13px; opacity:0.7; line-height:1.5; }
+.scene-bg-storm .scene-name,.scene-bg-storm .scene-desc { color:#fff; }
 
-        /* 场景网格 */
-        .scene-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }
+/* 小场景展开区 */
+.sub-scenes-panel {
+    display:none; background:var(--card); border-radius:18px;
+    padding:24px; margin-bottom:24px;
+    border:1px solid var(--border); box-shadow:0 4px 16px rgba(0,0,0,0.03);
+}
+.sub-scenes-panel.visible { display:block; }
+.sub-scenes-title { font-size:16px; font-weight:700; color:var(--text); margin-bottom:14px; }
+.sub-scene-item {
+    display:flex; align-items:center; gap:10px; padding:10px 14px;
+    border:1.5px solid var(--border); border-radius:12px; cursor:pointer;
+    margin-bottom:8px; transition:all 0.2s;
+}
+.sub-scene-item:hover { border-color:var(--pink); }
+.sub-scene-item.checked { border-color:var(--pink-deep); background:rgba(255,107,157,0.04); }
+.pixel-checkbox {
+    width:20px; height:20px; border:2px solid #c497a8; border-radius:2px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    font-size:12px; color:transparent; transition:all 0.2s;
+}
+.sub-scene-item.checked .pixel-checkbox { background:var(--pink-deep); border-color:var(--pink-deep); color:#fff; }
+.custom-input-row { display:flex; gap:8px; margin-top:10px; }
+.custom-input-row input {
+    flex:1; padding:10px 14px; border:1.5px dashed var(--border); border-radius:12px;
+    font-size:13px; font-family:inherit; outline:none;
+}
+.custom-input-row input:focus { border-color:var(--pink); }
+.custom-input-row button {
+    padding:10px 18px; border-radius:12px; background:var(--pink-deep);
+    color:#fff; border:none; cursor:pointer; font-family:inherit; font-size:13px;
+}
 
-        /* ====== 场景卡片通用 ====== */
-        .scene-card {
-            position:relative; border-radius:24px; overflow:hidden;
-            cursor:pointer; aspect-ratio:5/4;
-            transition:all 0.45s cubic-bezier(0.25,0.46,0.45,0.94);
-            box-shadow:0 4px 24px rgba(0,0,0,0.05);
-            border:2px solid transparent;
-        }
-        .scene-card:hover { transform:translateY(-6px); box-shadow:0 24px 56px rgba(0,0,0,0.10); }
-        .scene-card:active { transform:scale(0.97); }
+/* 协商区 */
+.negotiation-panel {
+    display:none; background:var(--card); border-radius:18px;
+    padding:24px; margin-bottom:24px;
+    border:1px solid var(--border); box-shadow:0 4px 16px rgba(0,0,0,0.03);
+}
+.negotiation-panel.visible { display:block; }
+.negotiation-title { font-size:16px; font-weight:700; color:var(--text); margin-bottom:16px; }
+.chat-bubble {
+    max-width:80%; padding:12px 16px; border-radius:16px;
+    font-size:13px; line-height:1.5; margin-bottom:10px;
+}
+.chat-bubble.me {
+    background:rgba(255,107,157,0.1); border:1px solid rgba(255,107,157,0.15);
+    margin-left:auto; border-bottom-right-radius:4px;
+}
+.chat-bubble.ta {
+    background:var(--bg); border:1px solid var(--border);
+    margin-right:auto; border-bottom-left-radius:4px;
+}
+.chat-bubble.system {
+    text-align:center; background:rgba(255,107,157,0.04); color:#D6336C;
+    max-width:100%; font-size:12px;
+}
+.nego-actions { display:flex; gap:10px; margin-top:12px; justify-content:center; }
+.nego-btn {
+    padding:10px 24px; border-radius:22px; font-size:14px; font-weight:600;
+    cursor:pointer; font-family:inherit; border:none; transition:all 0.2s;
+}
+.nego-btn.accept { background:linear-gradient(135deg,#FF6B9D,#D6336C); color:#fff; }
+.nego-btn.accept:hover { transform:translateY(-1px); }
+.nego-btn.swap { background:transparent; border:1.5px solid rgba(201,124,135,0.2); color:var(--text-secondary); }
+.nego-btn.swap:hover { border-color:#D6336C; }
 
-        /* 场景氛围层 */
-        .scene-atmosphere { position:absolute; inset:0; transition:transform 0.7s ease; z-index:0; }
-        .scene-card:hover .scene-atmosphere { transform:scale(1.06); }
+.couple-display { display:flex; align-items:center; gap:12px; justify-content:center; margin-bottom:16px; font-size:14px; }
+.loading-dots { display:inline-flex; gap:4px; }
+.loading-dots span { width:6px; height:6px; border-radius:50%; background:#D6336C; animation:dotBounce 1.4s infinite; }
+.loading-dots span:nth-child(2){animation-delay:0.2s;}.loading-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes dotBounce { 0%,80%,100%{transform:scale(0);opacity:0.3;} 40%{transform:scale(1);opacity:1;} }
 
-        /* 粒子装饰层 */
-        .scene-particles { position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
-        .sp-particle {
-            position:absolute; border-radius:50%; pointer-events:none;
-            animation:spFloat 4s ease-in-out infinite;
-        }
-        @keyframes spFloat {
-            0%,100% { transform:translate(0,0) scale(1); opacity:0.4; }
-            50% { transform:translate(8px,-12px) scale(1.4); opacity:0.7; }
-        }
+.btn { padding:10px 24px; border-radius:22px; font-size:14px; font-weight:600; cursor:pointer; border:none; font-family:inherit; transition:all 0.2s; }
+.btn-primary { background:linear-gradient(135deg,#FF6B9D,#D6336C); color:#fff; }
+.btn-outline { background:transparent; border:1.5px solid rgba(201,124,135,0.2); color:var(--text-secondary); }
+.btn-outline:hover { border-color:#D6336C; }
 
-        /* 场景内容 */
-        .scene-content { position:relative; z-index:3; height:100%; display:flex; flex-direction:column; justify-content:flex-end; padding:28px; }
-        .scene-icon { font-size:56px; margin-bottom:10px; transition:transform 0.4s ease; }
-        .scene-card:hover .scene-icon { transform:scale(1.1) translateY(-4px); }
-        .scene-name { font-size:24px; font-weight:700; margin-bottom:6px; }
-        .scene-desc { font-size:13px; line-height:1.7; }
-        .scene-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; }
-        .scene-tag { padding:5px 14px; border-radius:20px; font-size:12px; font-weight:500; }
+.alert-overlay {
+    position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.4);
+    display:flex; align-items:center; justify-content:center;
+}
+.alert-box {
+    background:#fff; border-radius:20px; padding:32px; text-align:center;
+    width:min(380px,90vw); box-shadow:0 16px 48px rgba(0,0,0,0.1);
+}
+.alert-icon { font-size:48px; margin-bottom:12px; }
+.alert-text { font-size:15px; color:var(--text); line-height:1.6; margin-bottom:20px; }
 
-        /* ====== 校园空间 ====== */
-        .card-campus .scene-atmosphere {
-            background:linear-gradient(165deg, #fce4ec 0%, #f8bbd0 25%, #fff9c4 55%, #e8f5e9 85%, #fdf4f4 100%);
-        }
-        .card-campus { border-color:rgba(244,143,177,0.12); }
-        .card-campus .scene-name { color:#ad1457; }
-        .card-campus .scene-desc { color:#8b6578; }
-        .card-campus .scene-tag { background:rgba(255,255,255,0.7); color:#ad1457; }
-        .card-campus .sp-particle { background:#f48fb1; }
-
-        /* ====== 职场空间 ====== */
-        .card-workplace .scene-atmosphere {
-            background:linear-gradient(165deg, #e8eaf6 0%, #c5cae9 25%, #e3f2fd 50%, #f5f5f5 80%, #fdf4f4 100%);
-        }
-        .card-workplace { border-color:rgba(121,134,203,0.12); }
-        .card-workplace .scene-name { color:#283593; }
-        .card-workplace .scene-desc { color:#5c6b8a; }
-        .card-workplace .scene-tag { background:rgba(255,255,255,0.7); color:#283593; }
-        .card-workplace .sp-particle { background:#7986cb; }
-
-        /* ====== 约会空间 ====== */
-        .card-dating .scene-atmosphere {
-            background:linear-gradient(165deg, #fce4ec 0%, #f8bbd0 20%, #ffe0b2 50%, #fff8e1 75%, #fdf4f4 100%);
-        }
-        .card-dating { border-color:rgba(240,98,146,0.12); }
-        .card-dating .scene-name { color:#c2185b; }
-        .card-dating .scene-desc { color:#8b5e6b; }
-        .card-dating .scene-tag { background:rgba(255,255,255,0.7); color:#c2185b; }
-        .card-dating .sp-particle { background:#f06292; }
-
-        /* ====== 风暴空间 ====== */
-        .card-storm .scene-atmosphere {
-            background:linear-gradient(165deg, #263238 0%, #37474f 20%, #455a64 40%, #546e7a 65%, #fdf4f4 100%);
-        }
-        .card-storm { border-color:rgba(84,110,122,0.15); }
-        .card-storm .scene-name { color:#ffffff; text-shadow:0 0 20px rgba(255,255,255,0.3); }
-        .card-storm .scene-desc { color:rgba(255,255,255,0.75); }
-        .card-storm .scene-tag { background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.85); backdrop-filter:blur(4px); }
-        .card-storm .sp-particle { background:rgba(255,255,255,0.5); }
-
-        /* 选中状态 */
-        .scene-card.selected { box-shadow:0 0 0 3px #c97c87, 0 20px 50px rgba(201,124,135,0.25); transform:translateY(-6px); }
-        .scene-card.selected::after {
-            content:'✓'; position:absolute; top:16px; right:16px; z-index:10;
-            width:32px; height:32px; border-radius:50%;
-            background:#c97c87; color:#fff;
-            display:flex; align-items:center; justify-content:center;
-            font-size:16px; font-weight:bold;
-        }
-
-        /* 确认按钮 */
-        .confirm-section { text-align:center; margin-top:44px; }
-        .confirm-btn {
-            display:inline-flex; align-items:center; gap:8px;
-            padding:16px 48px; border-radius:50px;
-            background:linear-gradient(135deg,#c97c87,#e8a0a8);
-            color:#fff; font-size:17px; font-weight:600;
-            text-decoration:none; cursor:pointer;
-            box-shadow:0 8px 32px rgba(201,124,135,0.25);
-            transition:all 0.3s ease; border:none;
-            opacity:0.4; pointer-events:none;
-        }
-        .confirm-btn.active { opacity:1; pointer-events:auto; }
-        .confirm-btn.active:hover { transform:translateY(-2px); box-shadow:0 16px 48px rgba(201,124,135,0.35); }
-
-        @media (max-width:640px) {
-            .scene-grid { grid-template-columns:1fr; }
-            .page-title h1 { font-size:24px; }
-            .scene-name { font-size:20px; }
-            .card-storm .scene-atmosphere { background:linear-gradient(165deg, #263238 0%, #37474f 30%, #546e7a 60%, #fdf4f4 100%); }
-        }
-    </style>
+@media (max-width:640px) { .scene-grid { grid-template-columns:1fr; } .navbar { padding:0 16px; } }
+</style>
 </head>
 <body>
 
-    <nav class="nav-bar">
-        <span class="nav-logo">Social</span>
-        <a href="/" class="nav-back"><i class="fa fa-arrow-left"></i> 返回</a>
-    </nav>
+<nav class="navbar">
+    <a href="/" class="nav-logo">Social</a>
+    <div class="nav-links">
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="workshop.html" class="nav-link">捏个分身</a>
+        <a href="javascript:checkMatchAndGo()" class="nav-link">开始约会</a>
+        <a href="report.html" class="nav-link">看看缘分</a>
+    </div>
+</nav>
 
-    <div class="main-container">
-        <div class="page-title">
-            <h1>🌍 选择一个约会场景</h1>
-            <p>数字人将在不同的虚拟世界中相遇，每个场景都是独特的体验</p>
+<div class="main-container" id="app">
+
+    <!-- ====== 页面标题 ====== -->
+    <div style="text-align:center;margin-bottom:32px;">
+        <h1 style="font-size:28px;font-weight:700;">🌍 选择约会场景</h1>
+        <p style="font-size:14px;color:var(--text-secondary);margin-top:4px;" id="matchInfo">加载中...</p>
+    </div>
+
+    <!-- ====== 大场景 ====== -->
+    <div class="scene-grid" id="sceneGrid">
+        <div class="scene-big-card scene-bg-campus" data-scene="campus" onclick="selectBigScene(this)">
+            <span class="scene-icon">🏫</span>
+            <div class="scene-name">校园空间</div>
+            <div class="scene-desc">图书馆午后、樱花树下、社团活动</div>
         </div>
-
-        <div class="scene-grid">
-
-            <!-- 校园空间 -->
-            <div class="scene-card card-campus" data-scene="campus" onclick="selectScene(this)">
-                <div class="scene-atmosphere"></div>
-                <div class="scene-particles">
-                    <span class="sp-particle" style="width:6px;height:6px;top:20%;left:18%;animation-delay:0s;"></span>
-                    <span class="sp-particle" style="width:4px;height:4px;top:35%;right:22%;animation-delay:1.5s;"></span>
-                    <span class="sp-particle" style="width:8px;height:8px;bottom:30%;left:25%;animation-delay:3s;"></span>
-                    <span class="sp-particle" style="width:3px;height:3px;top:15%;right:35%;animation-delay:2s;"></span>
-                </div>
-                <div class="scene-content">
-                    <div class="scene-icon">🏫</div>
-                    <div class="scene-name">校园空间</div>
-                    <div class="scene-desc">图书馆阳光洒落的午后、社团活动后的谈天、樱花树下的偶遇。回到最纯真的时光，在青春里撞见心动。</div>
-                    <div class="scene-tags">
-                        <span class="scene-tag">纯真浪漫</span>
-                        <span class="scene-tag">文艺清新</span>
-                        <span class="scene-tag">青春悸动</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 职场空间 -->
-            <div class="scene-card card-workplace" data-scene="workplace" onclick="selectScene(this)">
-                <div class="scene-atmosphere"></div>
-                <div class="scene-particles">
-                    <span class="sp-particle" style="width:5px;height:5px;top:22%;right:20%;animation-delay:0.5s;"></span>
-                    <span class="sp-particle" style="width:7px;height:7px;bottom:25%;left:20%;animation-delay:2s;"></span>
-                    <span class="sp-particle" style="width:4px;height:4px;top:30%;left:30%;animation-delay:3.5s;"></span>
-                    <span class="sp-particle" style="width:6px;height:6px;top:18%;right:28%;animation-delay:1s;"></span>
-                </div>
-                <div class="scene-content">
-                    <div class="scene-icon">🏢</div>
-                    <div class="scene-name">职场空间</div>
-                    <div class="scene-desc">茶水间的闲聊、项目攻坚时的并肩作战、午夜写字楼里互相递来的咖啡。在奋斗的城市丛林里，遇见懂你的人。</div>
-                    <div class="scene-tags">
-                        <span class="scene-tag">成熟稳重</span>
-                        <span class="scene-tag">并肩成长</span>
-                        <span class="scene-tag">知性优雅</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 约会空间 -->
-            <div class="scene-card card-dating" data-scene="dating" onclick="selectScene(this)">
-                <div class="scene-atmosphere"></div>
-                <div class="scene-particles">
-                    <span class="sp-particle" style="width:5px;height:5px;top:15%;left:25%;animation-delay:0.3s;"></span>
-                    <span class="sp-particle" style="width:6px;height:6px;top:28%;right:18%;animation-delay:1.8s;"></span>
-                    <span class="sp-particle" style="width:4px;height:4px;bottom:30%;right:25%;animation-delay:3.2s;"></span>
-                    <span class="sp-particle" style="width:7px;height:7px;top:20%;left:35%;animation-delay:2.5s;"></span>
-                </div>
-                <div class="scene-content">
-                    <div class="scene-icon">🕯️</div>
-                    <div class="scene-name">约会空间</div>
-                    <div class="scene-desc">烛光晚餐的微醺、天台上的城市夜景、电影散场后并肩走在灯光下。正式约会的仪式感，让浪漫在精心布置中悄然升温。</div>
-                    <div class="scene-tags">
-                        <span class="scene-tag">浪漫仪式</span>
-                        <span class="scene-tag">烛光微醺</span>
-                        <span class="scene-tag">心动升温</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 风暴空间 -->
-            <div class="scene-card card-storm" data-scene="storm" onclick="selectScene(this)">
-                <div class="scene-atmosphere"></div>
-                <div class="scene-particles">
-                    <span class="sp-particle" style="width:5px;height:5px;top:18%;left:22%;animation-delay:0s;"></span>
-                    <span class="sp-particle" style="width:4px;height:4px;top:25%;right:20%;animation-delay:1.2s;"></span>
-                    <span class="sp-particle" style="width:6px;height:6px;bottom:28%;left:28%;animation-delay:2.8s;"></span>
-                    <span class="sp-particle" style="width:3px;height:3px;top:32%;right:30%;animation-delay:3.6s;"></span>
-                    <span class="sp-particle" style="width:8px;height:8px;bottom:20%;right:18%;animation-delay:1.8s;"></span>
-                    <span class="sp-particle" style="width:4px;height:4px;top:22%;left:40%;animation-delay:4.2s;"></span>
-                </div>
-                <div class="scene-content">
-                    <div class="scene-icon">⛈️</div>
-                    <div class="scene-name">风暴空间</div>
-                    <div class="scene-desc">突如其来的停电、航班延误的深夜、暴风雨中挤在一把伞下。危机见真情——在最意外的事件里，看见彼此最真实的模样。</div>
-                    <div class="scene-tags">
-                        <span class="scene-tag">真实考验</span>
-                        <span class="scene-tag">患难见真情</span>
-                        <span class="scene-tag">意外心动</span>
-                    </div>
-                </div>
-            </div>
-
+        <div class="scene-big-card scene-bg-workplace" data-scene="workplace" onclick="selectBigScene(this)">
+            <span class="scene-icon">🏢</span>
+            <div class="scene-name">职场空间</div>
+            <div class="scene-desc">茶水间闲聊、并肩奋斗、午夜加班</div>
         </div>
-
-        <div class="confirm-section">
-            <button class="confirm-btn" id="confirmBtn" onclick="startDating()">
-                锁定场景，开始约会 <i class="fa fa-arrow-right"></i>
-            </button>
+        <div class="scene-big-card scene-bg-dating" data-scene="dating" onclick="selectBigScene(this)">
+            <span class="scene-icon">🕯️</span>
+            <div class="scene-name">约会空间</div>
+            <div class="scene-desc">烛光晚餐、城市夜景、天台微醺</div>
+        </div>
+        <div class="scene-big-card scene-bg-storm" data-scene="storm" onclick="selectBigScene(this)">
+            <span class="scene-icon">⛈️</span>
+            <div class="scene-name">风暴空间</div>
+            <div class="scene-desc">暴风雨中、停电之夜、航班延误</div>
         </div>
     </div>
 
-    <script>
-    var selectedScene = null;
+    <!-- ====== 小场景区 ====== -->
+    <div class="sub-scenes-panel" id="subScenesPanel">
+        <div class="sub-scenes-title" id="subScenesTitle">选择小场景</div>
+        <div id="subScenesList"></div>
+        <div class="custom-input-row">
+            <input type="text" id="customSceneInput" placeholder="自定义场景...">
+            <button onclick="addCustomScene()">+ 添加</button>
+        </div>
+        <div style="margin-top:16px;text-align:right;">
+            <button class="btn btn-primary" onclick="inviteMatch()">💌 邀请 TA</button>
+        </div>
+    </div>
 
-    function selectScene(el) {
-        document.querySelectorAll('.scene-card').forEach(function(c) { c.classList.remove('selected'); });
-        el.classList.add('selected');
-        selectedScene = el.dataset.scene;
-        document.getElementById('confirmBtn').classList.add('active');
+    <!-- ====== 协商区 ====== -->
+    <div class="negotiation-panel" id="negoPanel">
+        <div class="negotiation-title">💬 场景协商</div>
+        <div class="couple-display">
+            <span id="negoMyName">我</span> 💗 <span id="negoTaName">TA</span>
+        </div>
+        <div id="negoChat"></div>
+        <div class="nego-actions" id="negoActions"></div>
+    </div>
+</div>
+
+<script>
+var DEEPSEEK_KEY = 'sk-your-api-key-here';
+var DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
+
+var matchPersona = null, myPersona = null;
+try { matchPersona = JSON.parse(localStorage.getItem('social_match_persona')||'null'); } catch(e){}
+try { myPersona = JSON.parse(localStorage.getItem('social_my_persona')||'null'); } catch(e){}
+var selectedBigScene = null, selectedSubScene = null, customScenes = [];
+var negoRound = 0, maxNegoRounds = 2;
+var negoHistory = [];
+
+// ===== 前置校验 =====
+window.checkMatchAndGo = function() {
+    if (matchPersona && matchPersona.name) {
+        window.location.href = '/scene.html';
+    } else {
+        var overlay = document.createElement('div');
+        overlay.className = 'alert-overlay';
+        overlay.innerHTML = '<div class="alert-box"><div class="alert-icon">💡</div><div class="alert-text">先匹配一位心动的 TA 吧！<br>去心动信号站寻找你的缘分</div><button class="btn btn-primary" onclick="window.location.href=\'/\'">去匹配 →</button></div>';
+        overlay.onclick = function(e){if(e.target===overlay)overlay.remove();};
+        document.body.appendChild(overlay);
     }
+};
 
-    function startDating() {
-        if (!selectedScene) return;
-        // TODO: 接入后端 → 启动该场景下的数字人对话
-        window.location.href = 'dating.html?scene=' + selectedScene;
+// ===== 初始化 =====
+(function init() {
+    if (matchPersona) {
+        document.getElementById('matchInfo').textContent = '与 '+(matchPersona.name||'TA')+' 的约会 · 选择一个场景开始吧';
+    } else {
+        document.getElementById('matchInfo').textContent = '选择一个场景开始约会';
     }
+})();
 
-    console.log('🌍 四大场景：校园 | 职场 | 约会 | 风暴');
-    </script>
+// ===== AI 生成小场景 =====
+var subSceneDB = {
+    campus: ['📚 图书馆邂逅','🌸 樱花树下散步','🎵 社团音乐角','🍱 食堂午餐偶遇'],
+    workplace: ['☕ 茶水间闲聊','💼 会议室合作','🌃 加班夜互相打气','📊 项目攻坚午餐'],
+    dating: ['🕯️ 烛光晚餐','🍷 红酒品鉴之夜','🎤 脱口秀现场','🌃 天台城市夜景'],
+    storm: ['🌧️ 暴风雨中撑伞','🔦 停电之夜的故事','✈️ 航班延误的候机厅','🏚️ 暴雨中的安全屋'],
+};
+
+function selectBigScene(el) {
+    document.querySelectorAll('.scene-big-card').forEach(function(c){c.classList.remove('selected');});
+    el.classList.add('selected');
+    selectedBigScene = el.dataset.scene;
+    customScenes = [];
+    document.getElementById('customSceneInput').value = '';
+
+    // 显示小场景
+    var panel = document.getElementById('subScenesPanel');
+    var title = document.getElementById('subScenesTitle');
+    var list = document.getElementById('subScenesList');
+    panel.classList.add('visible');
+    title.textContent = '选择小场景 — ' + el.querySelector('.scene-name').textContent;
+
+    var preset = subSceneDB[selectedBigScene] || [];
+    list.innerHTML = preset.map(function(s){
+        return '<div class="sub-scene-item" onclick="toggleSubScene(this)" data-scene="'+s+'">'+
+            '<span class="pixel-checkbox">✓</span><span>'+s+'</span></div>';
+    }).join('');
+    selectedSubScene = null;
+
+    // 滚动到小场景区
+    panel.scrollIntoView({behavior:'smooth'});
+}
+
+function toggleSubScene(el) {
+    document.querySelectorAll('.sub-scene-item').forEach(function(i){i.classList.remove('checked');});
+    el.classList.add('checked');
+    selectedSubScene = el.dataset.scene;
+}
+
+function addCustomScene() {
+    var input = document.getElementById('customSceneInput');
+    var val = input.value.trim();
+    if (!val) return;
+    customScenes.push(val);
+    var list = document.getElementById('subScenesList');
+    var div = document.createElement('div');
+    div.className = 'sub-scene-item checked';
+    div.innerHTML = '<span class="pixel-checkbox">✓</span><span>✏️ '+val+'</span>';
+    div.onclick = function(){toggleSubScene(this);selectedSubScene = '✏️ '+val;};
+    list.appendChild(div);
+    selectedSubScene = '✏️ '+val;
+    input.value = '';
+    // 取消其他选中
+    document.querySelectorAll('.sub-scene-item').forEach(function(i){i.classList.remove('checked');});
+    div.classList.add('checked');
+}
+
+// ===== 协商流程 =====
+function inviteMatch() {
+    if (!selectedBigScene) { alert('请先选择一个大场景'); return; }
+    if (!selectedSubScene) { alert('请选择或输入一个小场景'); return; }
+
+    negoRound = 0; negoHistory = [];
+    var panel = document.getElementById('negoPanel');
+    var chat = document.getElementById('negoChat');
+    panel.classList.add('visible');
+    document.getElementById('negoMyName').textContent = myPersona?myPersona.name:'我';
+    document.getElementById('negoTaName').textContent = matchPersona?matchPersona.name:'TA';
+
+    chat.innerHTML = '';
+    negoHistory = [];
+    addNegoMsg('system', '📨 你向 '+(matchPersona?matchPersona.name:'TA')+' 发送了约会邀请');
+    addNegoMsg('me', '「'+selectedSubScene+'」想去吗？');
+
+    // 模拟对方回应（1.5秒后）
+    setTimeout(function(){
+        var accepted = Math.random() > 0.35;
+        if (accepted) {
+            addNegoMsg('ta', '好呀！「'+selectedSubScene+'」听起来很棒！✅');
+            showNegoActions('accepted');
+        } else {
+            negoRound++;
+            addNegoMsg('ta', '「'+selectedSubScene+'」不太合适...要不要试试这个？🔄');
+            // AI推荐替代方案
+            var alt = getAlternativeScene();
+            addNegoMsg('ta', '我推荐：「'+alt+'」怎么样？');
+            showNegoActions('swapped', alt);
+        }
+    }, 1500);
+    panel.scrollIntoView({behavior:'smooth'});
+}
+
+function getAlternativeScene() {
+    var allPresets = subSceneDB[selectedBigScene] || [];
+    var filtered = allPresets.filter(function(s){return s !== selectedSubScene && customScenes.indexOf(s)<0;});
+    if (filtered.length === 0) filtered = ['☕ 咖啡馆随意聊','🌿 公园散步'];
+    return filtered[Math.floor(Math.random()*filtered.length)];
+}
+
+function addNegoMsg(type, text) {
+    var chat = document.getElementById('negoChat');
+    var div = document.createElement('div');
+    div.className = 'chat-bubble ' + type;
+    div.textContent = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function showNegoActions(state, altScene) {
+    var actions = document.getElementById('negoActions');
+    if (state === 'accepted') {
+        actions.innerHTML = '<button class="nego-btn accept" onclick="startDate()">✅ 开始约会</button>';
+    } else if (state === 'swapped' && negoRound < maxNegoRounds) {
+        actions.innerHTML =
+            '<button class="nego-btn accept" onclick="acceptAlt(\''+(altScene||'').replace(/'/g,"\\'")+'\')">✅ 接受这个</button>'+
+            '<button class="nego-btn swap" onclick="counterPropose()">🔄 我再想想</button>';
+    } else {
+        // 超过轮次，强制折中
+        var forced = subSceneDB[selectedBigScene]?subSceneDB[selectedBigScene][0]:'☕ 咖啡馆初遇';
+        addNegoMsg('system', '⏰ 协商轮次已满，系统推荐折中方案：「'+forced+'」');
+        actions.innerHTML = '<button class="nego-btn accept" onclick="selectedSubScene=\''+forced.replace(/'/g,"\\'")+'\';startDate();">✅ 开始约会</button>';
+    }
+}
+
+function acceptAlt(scene) {
+    selectedSubScene = scene;
+    addNegoMsg('me', '好的！「'+scene+'」就这个吧 ✅');
+    document.getElementById('negoActions').innerHTML = '<button class="nego-btn accept" onclick="startDate()">✅ 开始约会</button>';
+}
+
+function counterPropose() {
+    if (negoRound >= maxNegoRounds) return;
+    negoRound++;
+    var alt = getAlternativeScene();
+    addNegoMsg('me', '我想试试「'+alt+'」怎么样？');
+    setTimeout(function(){
+        var accepted = negoRound >= maxNegoRounds || Math.random() > 0.3;
+        if (accepted) {
+            selectedSubScene = alt;
+            addNegoMsg('ta', '好吧！「'+alt+'」也行 ✅');
+            document.getElementById('negoActions').innerHTML = '<button class="nego-btn accept" onclick="startDate()">✅ 开始约会</button>';
+        } else {
+            addNegoMsg('ta', '还是不太对...要不再看看？');
+            var alt2 = getAlternativeScene();
+            addNegoMsg('ta', '最后一个提议：「'+alt2+'」？');
+            document.getElementById('negoActions').innerHTML =
+                '<button class="nego-btn accept" onclick="acceptAlt(\''+alt2.replace(/'/g,"\\'")+'\')">✅ 接受</button>'+
+                (negoRound < maxNegoRounds ? '<button class="nego-btn swap" onclick="counterPropose()">🔄 再换</button>' : '');
+        }
+    }, 1200);
+}
+
+function startDate() {
+    // 保存场景选择
+    localStorage.setItem('social_selected_scene', JSON.stringify({
+        big: selectedBigScene,
+        sub: selectedSubScene,
+        time: new Date().toISOString()
+    }));
+    window.location.href = 'dating.html?scene=' + selectedBigScene + '&sub=' + encodeURIComponent(selectedSubScene||'');
+}
+
+console.log('🌍 场景选择 · 前置校验 · AI生成 · 协商流程');
+</script>
 </body>
 </html>
